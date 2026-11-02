@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<!--
+  © 2026 Julio Novoa. Todos los derechos reservados.
+  Prohibida su copia, reproducción o uso total o parcial sin autorización del autor.
+  https://www.linkedin.com/in/julio-novoa/
+-->
+
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -1842,6 +1848,7 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeModal
 <script>
 (function(){var open=document.getElementById('vm-help-open'),overlay=document.getElementById('vm-help-overlay'),close=document.getElementById('vm-help-close');if(!open||!overlay||!close)return;function show(){overlay.classList.add('open');overlay.setAttribute('aria-hidden','false')}function hide(){overlay.classList.remove('open');overlay.setAttribute('aria-hidden','true')}open.addEventListener('click',show);close.addEventListener('click',hide);overlay.addEventListener('click',function(e){if(e.target===overlay)hide()});document.addEventListener('keydown',function(e){if(e.key==='Escape')hide()});})();
 </script>
+<div style="position:fixed;bottom:6px;left:50%;transform:translateX(-50%);z-index:2147483647;pointer-events:none;font:600 10px/1.4 system-ui,sans-serif;color:#fff;background:rgba(15,20,32,.78);padding:3px 10px;opacity:.85;border-radius:999px;white-space:nowrap">© 2026 Julio Novoa · Todos los derechos reservados</div>
 </body>
 </html>
 
