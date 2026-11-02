@@ -1,0 +1,168 @@
+-- Nodo n8n: VOLUMETRIA3
+-- Recalcula la tabla VOLUMETRIA_SEMANA (putaway por área y hora, últimos 14 días)
+
+CREATE OR REPLACE TABLE `your-project.analytics.VOLUMETRIA_SEMANA` AS
+
+WITH
+
+SKU AS (
+  SELECT
+    INVENTORY_ID,
+    COALESCE(
+      ITE_VOLUMEN,
+      ITE_HEIGHT * ITE_LENGTH * ITE_WIDTH / 1000.0
+    ) AS V_LITROS
+  FROM `your-project.source.SKU_DETAILS`
+  WHERE LOGISTIC_CENTER_ID = 'CD-01'
+    AND SIT_SITE_ID = 'MLC'
+  QUALIFY ROW_NUMBER() OVER (
+    PARTITION BY INVENTORY_ID
+    ORDER BY INVENTORY_ID
+  ) = 1
+),
+
+MOVIMIENTOS_BASE AS (
+  SELECT
+    DATE(
+      DATETIME_ADD(FBM_CREATED_DATE, INTERVAL 1 HOUR)
+    ) AS FECHA,
+
+    EXTRACT(
+      WEEK(SUNDAY)
+      FROM DATETIME_ADD(FBM_CREATED_DATE, INTERVAL 1 HOUR)
+    ) + 1 AS SEMANA,
+
+    EXTRACT(
+      HOUR
+      FROM DATETIME_ADD(FBM_CREATED_DATE, INTERVAL 1 HOUR)
+    ) AS HORA,
+
+    INVENTORY_ID,
+    FBM_QUANTITY,
+
+    CASE
+      WHEN ADDRESS_TO LIKE '%HV%'     THEN 'HV3'
+      WHEN ADDRESS_TO LIKE '%RK-0-1%' THEN 'HS'
+      WHEN ADDRESS_TO LIKE '%RK-0-0%' THEN 'RK0'
+      WHEN ADDRESS_TO LIKE '%RS%'     THEN 'RS0'
+      WHEN ADDRESS_TO LIKE '%MZ-1%'   THEN 'MZ1'
+      WHEN ADDRESS_TO LIKE '%MZ-2%'   THEN 'MZ2'
+      WHEN ADDRESS_TO LIKE '%MZ-3%'   THEN 'MZ3'
+      WHEN ADDRESS_TO LIKE '%MZ-0%'   THEN 'MZ0'
+      WHEN ADDRESS_TO LIKE '%BL%'     THEN 'BL0'
+      ELSE 'OTHERS'
+    END AS AREA
+
+  FROM `your-project.source.STOCK_MOVEMENTS`
+
+  WHERE WAREHOUSE_ID = 'CD-01'
+    AND FBM_REASON_PROCESS = 'put_away'
+    AND FBM_CREATED_DATE >= DATETIME_SUB(
+      CURRENT_DATETIME(),
+      INTERVAL 14 DAY
+    )
+    AND FBM_QUANTITY > 0
+),
+
+BF_AREA AS (
+  SELECT
+    FBM_CURRENT_DATE AS BF_DATE,
+
+    CASE
+      WHEN DIRECCION LIKE '%HV%'     THEN 'HV3'
+      WHEN DIRECCION LIKE '%RK-0-0%' THEN 'RK0'
+      WHEN DIRECCION LIKE '%RK-0-1%' THEN 'HS'
+      WHEN DIRECCION LIKE '%RS%'     THEN 'RS0'
+      WHEN DIRECCION LIKE '%MZ-1%'   THEN 'MZ1'
+      WHEN DIRECCION LIKE '%MZ-2%'   THEN 'MZ2'
+      WHEN DIRECCION LIKE '%MZ-3%'   THEN 'MZ3'
+      WHEN DIRECCION LIKE '%MZ-0%'   THEN 'MZ0'
+      WHEN DIRECCION LIKE '%BL%'     THEN 'BL0'
+      ELSE 'OTHERS'
+    END AS AREA,
+
+    SAFE_DIVIDE(
+      SUM(
+        CASE
+          WHEN TOTAL > 0 THEN
+            CASE
+              WHEN VOLUMEN_REAL > CAP_VOLUMEN_BIN_100
+                THEN CAP_VOLUMEN_BIN_100
+              ELSE VOLUMEN_REAL
+            END
+        END
+      ),
+      SUM(
+        CASE
+          WHEN TOTAL > 0 THEN
+            CASE
+              WHEN CAP_VOLUMEN_BIN_100 IS NULL
+                THEN VOLUMEN_REAL
+              ELSE CAP_VOLUMEN_BIN_100
+            END
+        END
+      )
+    ) AS RATIO_BIN
+
+  FROM `your-project.source.BIN_CAPACITY_STOCK`
+
+  WHERE PAIS = 'Chile'
+    AND SITE = 'CD-01'
+    AND NUMERO_SKU IS NOT NULL
+    AND CAP_VOLUMEN_BIN_100 IS NOT NULL
+    AND FBM_CURRENT_DATE >= CURRENT_DATE() - 14
+    AND FBM_CURRENT_DATE <= CURRENT_DATE()
+
+  GROUP BY
+    BF_DATE,
+    AREA
+)
+
+SELECT
+  m.FECHA,
+  m.SEMANA,
+  m.HORA,
+  m.AREA,
+
+  COUNT(DISTINCT m.INVENTORY_ID) AS SKUs_Distintos,
+
+  SUM(m.FBM_QUANTITY) AS Cantidad_Total_Unidades,
+
+  SUM(
+    m.FBM_QUANTITY * COALESCE(s.V_LITROS, 0)
+  ) AS Volumen_Total_Litros,
+
+  SAFE_DIVIDE(
+    SUM(
+      m.FBM_QUANTITY * COALESCE(s.V_LITROS, 0)
+    ),
+    SUM(m.FBM_QUANTITY)
+  ) AS Volumetria_Litros_Por_Unidad,
+
+  AVG(
+    COALESCE(s.V_LITROS, 0)
+  ) AS Volumen_Promedio_SKU,
+
+  MAX(
+    ROUND(COALESCE(bf.RATIO_BIN, 0) * 100, 1)
+  ) AS Binfullness
+
+FROM MOVIMIENTOS_BASE m
+
+LEFT JOIN SKU s
+  ON s.INVENTORY_ID = m.INVENTORY_ID
+
+LEFT JOIN BF_AREA bf
+  ON bf.BF_DATE = m.FECHA
+ AND bf.AREA = m.AREA
+
+GROUP BY
+  m.FECHA,
+  m.SEMANA,
+  m.HORA,
+  m.AREA
+
+ORDER BY
+  FECHA DESC,
+  HORA DESC,
+  AREA;

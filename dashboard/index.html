@@ -1,0 +1,1852 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Volumetria por Area - CD-01 MLC</title>
+
+
+<style>
+*,*:before,*:after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:"Proxima Nova",-apple-system,Arial,sans-serif;
+  font-size:14px;background:#eeeeee;color:rgba(0,0,0,.9);min-height:100vh;}
+
+.ml-header{height:55px;background:#FFE600;display:flex;
+  align-items:center;justify-content:space-between;
+  padding:0 16px;position:sticky;top:0;z-index:300;
+  box-shadow:0 2px 4px rgba(0,0,0,.12);}
+.header-l{display:flex;align-items:center;gap:12px;}
+.burger{display:flex;flex-direction:column;
+  justify-content:space-between;width:20px;height:15px;}
+.burger span{display:block;height:2px;background:rgba(0,0,0,.7);}
+.header-r{display:flex;align-items:center;gap:8px;
+  font-size:12px;color:rgba(0,0,0,.65);}
+.chip{display:flex;align-items:center;gap:6px;
+  background:rgba(255,255,255,.55);border-radius:4px;
+  padding:3px 10px;font-size:12px;font-weight:600;color:rgba(0,0,0,.8);}
+.avatar{width:24px;height:24px;border-radius:50%;
+  background:#1a1a2e;color:#fff;display:flex;
+  align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;}
+
+.page{max-width:1400px;margin:0 auto;padding:20px 20px 48px;}
+.page-title{margin-bottom:16px;}
+.page-title h1{font-size:22px;font-weight:700;
+  color:rgba(0,0,0,.9);margin-bottom:2px;}
+.page-title p{font-size:13px;color:rgba(0,0,0,.45);}
+
+.control-bar{display:flex;align-items:center;
+  justify-content:space-between;margin-bottom:20px;
+  flex-wrap:wrap;gap:10px;}
+.tab-bar{display:flex;gap:0;
+  background:#fff;border-radius:8px;padding:4px;
+  box-shadow:rgba(149,157,165,.18) 0 4px 12px;
+  width:fit-content;}
+.tab{padding:9px 28px;border:none;background:transparent;
+  font-family:inherit;font-size:13px;font-weight:600;
+  color:rgba(0,0,0,.45);border-radius:6px;cursor:pointer;
+  transition:all .15s ease;}
+.tab:hover{color:rgba(0,0,0,.7);background:rgba(0,0,0,.04);}
+.tab.active{background:#3483fa;color:#fff;}
+
+.filter-group{display:flex;align-items:center;gap:8px;}
+.filter-label{font-size:12px;font-weight:600;
+  color:rgba(0,0,0,.45);margin-right:4px;}
+.fbtn{padding:7px 18px;border:2px solid rgba(0,0,0,.12);
+  background:#fff;border-radius:20px;cursor:pointer;
+  font-family:inherit;font-size:13px;font-weight:700;
+  color:rgba(0,0,0,.5);transition:all .15s ease;}
+.fbtn:hover{border-color:#3483fa;color:#3483fa;}
+.fbtn.active{background:#3483fa;border-color:#3483fa;
+  color:#fff;box-shadow:0 2px 8px rgba(52,131,250,.3);}
+.fbtn.disabled{opacity:.35;cursor:not-allowed;pointer-events:none;}
+
+.turno-bar{display:flex;align-items:center;gap:10px;margin-bottom:20px;
+  margin-top:-12px;flex-wrap:wrap;}
+.turno-box{display:flex;align-items:center;gap:8px;background:#fff;
+  border-radius:10px;padding:7px 14px;
+  box-shadow:rgba(149,157,165,.15) 0 2px 10px;}
+.turno-lbl{font-size:12px;font-weight:600;color:rgba(0,0,0,.45);}
+.turno-inp{width:52px;height:32px;border:1.5px solid rgba(0,0,0,.12);
+  border-radius:6px;text-align:center;font-size:14px;font-weight:700;
+  font-family:inherit;color:rgba(0,0,0,.8);outline:none;background:#fff;}
+.turno-inp:focus{border-color:#3483fa;box-shadow:0 0 0 3px rgba(52,131,250,.12);}
+.turno-sep{font-size:13px;color:rgba(0,0,0,.3);font-weight:600;}
+.turno-tag{display:none;align-items:center;gap:6px;background:rgba(52,131,250,.08);
+  border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;color:#3483fa;}
+.turno-tag.on{display:flex;}
+.turno-clr{background:none;border:none;cursor:pointer;font-size:14px;
+  color:rgba(52,131,250,.6);padding:0;line-height:1;}
+.turno-clr:hover{color:#e84040;}
+.turno-sel{height:32px;border:1.5px solid rgba(0,0,0,.12);border-radius:6px;
+  padding:0 8px;font-size:13px;font-weight:600;font-family:inherit;
+  color:rgba(0,0,0,.8);background:#fff;outline:none;cursor:pointer;}
+.turno-sel:focus{border-color:#3483fa;}
+
+.window-info{display:inline-flex;align-items:center;gap:6px;
+  background:rgba(52,131,250,.08);border-radius:6px;
+  padding:4px 12px;font-size:12px;font-weight:600;
+  color:#3483fa;margin-left:8px;}
+
+.tab-content{display:none;}
+.tab-content.visible{display:block;}
+.areas-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(560px,1fr));
+  gap:20px;}
+
+.area-card{background:#fff;border-radius:12px;
+  box-shadow:rgba(149,157,165,.18) 0 4px 16px;
+  overflow:hidden;cursor:pointer;
+  transition:box-shadow .2s ease,transform .15s ease;}
+.area-card:hover{
+  box-shadow:rgba(52,131,250,.22) 0 8px 28px;
+  transform:translateY(-2px);}
+.area-card:hover .ac-click-hint{opacity:1;}
+
+.ac-header{display:flex;align-items:center;
+  justify-content:space-between;padding:18px 20px 0 20px;}
+.ac-name{font-size:26px;font-weight:800;letter-spacing:-.5px;}
+.ac-badge{font-size:12px;font-weight:700;
+  padding:4px 12px;border-radius:10px;}
+.badge-green {background:#e8f9ee;color:#00a650;}
+.badge-blue  {background:#e8f0fe;color:#3483fa;}
+.badge-yellow{background:#fff3cd;color:#d48806;}
+.badge-gray  {background:rgba(0,0,0,.06);color:rgba(0,0,0,.5);}
+
+.ac-kpis{display:flex;gap:0;padding:12px 20px 14px 20px;
+  border-bottom:1px solid rgba(0,0,0,.06);}
+.ac-kpi{flex:1;text-align:center;
+  border-right:1px solid rgba(0,0,0,.07);}
+.ac-kpi:last-child{border-right:none;}
+.ac-kv{font-size:22px;font-weight:700;
+  line-height:1.1;color:rgba(0,0,0,.85);}
+.ac-kl{font-size:10px;font-weight:600;color:rgba(0,0,0,.38);
+  text-transform:uppercase;letter-spacing:.4px;margin-top:3px;}
+
+.ac-chart-hd{padding:14px 20px 6px 20px;
+  display:flex;justify-content:space-between;align-items:center;}
+.chart-tog{display:flex;gap:4px;}
+.ctbtn{padding:4px 12px;border-radius:12px;
+  border:1.5px solid rgba(0,0,0,.14);background:transparent;
+  font-size:11px;font-weight:700;color:rgba(0,0,0,.45);
+  cursor:pointer;font-family:inherit;transition:all .14s ease;}
+.ctbtn:hover{border-color:#3483fa;color:#3483fa;}
+.ctbtn.active{background:#3483fa;border-color:#3483fa;
+  color:#fff;box-shadow:0 1px 6px rgba(52,131,250,.28);}
+
+.ac-click-hint{font-size:11px;color:#3483fa;opacity:0;
+  transition:opacity .2s;font-weight:500;}
+.ac-chart-wrap{height:240px;padding:0 14px 8px 14px;}
+.ac-opt-note{padding:6px 20px 14px 20px;font-size:11px;color:rgba(0,0,0,.45);
+  display:flex;align-items:center;gap:6px;line-height:1.4;}
+.ac-opt-note .ref-line{display:inline-block;width:22px;height:2px;
+  background:#e84040;border-radius:2px;flex-shrink:0;
+  border-top:2px dashed #e84040;background:none;}
+
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.52);
+  z-index:1000;display:none;
+  align-items:center;justify-content:center;padding:16px;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:#fff;border-radius:14px;
+  width:100%;max-width:960px;max-height:88vh;
+  display:flex;flex-direction:column;
+  box-shadow:0 24px 80px rgba(0,0,0,.28);}
+.modal-hd{padding:20px 24px 16px 24px;
+  border-bottom:1px solid rgba(0,0,0,.07);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;}
+.modal-title{display:flex;align-items:center;gap:12px;}
+.modal-area-name{font-size:24px;font-weight:800;letter-spacing:-.5px;}
+.modal-subtitle{font-size:12px;color:rgba(0,0,0,.4);margin-top:2px;}
+.modal-close{width:34px;height:34px;border-radius:50%;
+  background:rgba(0,0,0,.07);border:none;cursor:pointer;
+  font-size:18px;color:rgba(0,0,0,.5);
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s;}
+.modal-close:hover{background:rgba(0,0,0,.13);}
+.modal-kpis{display:flex;gap:0;
+  border-bottom:1px solid rgba(0,0,0,.06);flex-shrink:0;}
+.modal-kpi{flex:1;padding:14px 0;text-align:center;
+  border-right:1px solid rgba(0,0,0,.06);}
+.modal-kpi:last-child{border-right:none;}
+.modal-kv{font-size:20px;font-weight:700;color:rgba(0,0,0,.85);}
+.modal-kl{font-size:10px;font-weight:600;color:rgba(0,0,0,.38);
+  text-transform:uppercase;letter-spacing:.4px;margin-top:2px;}
+.modal-body{flex:1;overflow-y:auto;}
+.modal-tscroll{overflow-x:auto;}
+.modal-table{width:100%;border-collapse:collapse;min-width:640px;}
+.modal-table thead tr{border-bottom:2px solid rgba(0,0,0,.07);}
+.modal-table th{padding:12px 16px;text-align:left;font-size:11px;
+  font-weight:600;color:rgba(0,0,0,.45);text-transform:uppercase;
+  letter-spacing:.5px;white-space:nowrap;cursor:pointer;
+  user-select:none;position:sticky;top:0;background:#fff;z-index:1;}
+.modal-table th:hover{color:rgba(0,0,0,.7);}
+.sort-icon{font-size:9px;opacity:.45;margin-left:3px;}
+.modal-table td{padding:10px 16px;
+  border-bottom:1px solid rgba(0,0,0,.04);
+  font-size:13px;white-space:nowrap;color:rgba(0,0,0,.82);}
+.modal-table tbody tr:last-child td{border-bottom:none;}
+.modal-table tbody tr:nth-child(even) td{background:rgba(0,0,0,.025);}
+.modal-table tbody tr:hover td{background:#f4f8ff;}
+.num{text-align:right;}
+.vol-good{color:#00a650;font-weight:700;}
+.vol-bad{color:#e84040;font-weight:700;}
+.ac-bin-bar{padding:4px 20px 12px 20px;display:flex;gap:14px;
+  font-size:11px;color:rgba(0,0,0,.5);flex-wrap:wrap;align-items:center;}
+.ac-bin-bar .bin-opt{color:#00a650;font-weight:700;}
+.ac-bin-bar .bin-crit{color:#e84040;font-weight:700;}
+.ac-bin-bar .bin-nd{font-style:italic;opacity:.5;}
+
+.pfooter{margin-top:20px;display:flex;
+  justify-content:space-between;align-items:center;
+  font-size:11px;color:rgba(0,0,0,.3);}
+.rtag{background:rgba(0,0,0,.06);padding:3px 9px;
+  border-radius:10px;font-size:11px;}
+
+.tote-section-lbl{font-size:13px;font-weight:700;color:rgba(0,0,0,.5);
+  margin-top:24px;margin-bottom:12px;padding-top:18px;
+  border-top:1px solid rgba(0,0,0,.07);
+  display:flex;align-items:center;gap:8px;}
+.tote-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(560px,1fr));gap:20px;}
+.tote-card{background:#fff;border-radius:12px;
+  box-shadow:rgba(149,157,165,.18) 0 4px 16px;overflow:hidden;}
+.tote-hd{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 0 20px;}
+.tote-title{font-size:22px;font-weight:800;letter-spacing:-.5px;}
+.tote-kpis{display:flex;gap:0;padding:10px 20px 12px 20px;
+  border-bottom:1px solid rgba(0,0,0,.06);}
+.tote-kpi{flex:1;text-align:center;border-right:1px solid rgba(0,0,0,.07);}
+.tote-kpi:last-child{border-right:none;}
+.tote-kv{font-size:18px;font-weight:700;color:rgba(0,0,0,.85);}
+.tote-kl{font-size:10px;font-weight:600;color:rgba(0,0,0,.38);
+  text-transform:uppercase;letter-spacing:.4px;margin-top:2px;}
+.tote-chart-wrap{height:220px;padding:4px 14px 12px 14px;}
+.tote-toggle{display:flex;gap:4px;}
+.tote-legend{padding:4px 20px 12px;display:flex;gap:16px;font-size:11px;color:rgba(0,0,0,.6);}
+.tote-dot{width:11px;height:11px;border-radius:2px;display:inline-block;margin-right:4px;}
+
+.detalle-wrap{overflow-x:auto;border-radius:12px;
+  box-shadow:rgba(149,157,165,.18) 0 4px 16px;background:#fff;}
+.detalle-tbl{width:100%;border-collapse:collapse;min-width:900px;font-size:13px;}
+.detalle-tbl th,.detalle-tbl td{padding:9px 14px;text-align:right;white-space:nowrap;}
+.dt-hora-hd,.dt-hora-cell{text-align:center;position:sticky;left:0;z-index:2;
+  background:#f5f7fa;font-weight:700;border-right:2px solid rgba(0,0,0,.07);}
+.dt-group-pu{background:#e8f9ee;color:#00a650;font-weight:700;font-size:12px;
+  text-align:center;border-bottom:2px solid #00a650;letter-spacing:.3px;}
+.dt-group-in{background:#f3e8ff;color:#7b1fa2;font-weight:700;font-size:12px;
+  text-align:center;border-bottom:2px solid #7b1fa2;border-left:3px solid #ddd;}
+.dt-col-pu{background:#fff;font-weight:600;font-size:11px;color:#00a650;
+  border-bottom:1px solid rgba(0,166,80,.18);text-align:center;}
+.dt-col-in{background:#fff;font-weight:600;font-size:11px;color:#7b1fa2;
+  border-bottom:1px solid rgba(123,31,162,.18);text-align:center;
+  border-left:3px solid #f0e8ff;}
+.dt-cell-pu{color:rgba(0,0,0,.78);}
+.dt-cell-in{color:rgba(0,0,0,.78);border-left:3px solid #f0e8ff;background:#fdf8ff;}
+.detalle-tbl tbody tr:hover td{background:#f4f8ff!important;}
+.detalle-tbl tbody tr:nth-child(even) td{background:rgba(0,0,0,.018);}
+.detalle-tbl tbody tr:nth-child(even) .dt-cell-in{background:rgba(123,31,162,.03);}
+.dt-footer td{background:#1a1a2e!important;color:#fff!important;
+  font-weight:700;font-size:13px;border-top:2px solid #000;}
+.dt-footer .dt-hora-cell{background:#111!important;color:#fff!important;}
+</style>
+
+<style>
+/* =========================================================
+   ESTILOS MEJORADOS PARA EL MODAL (DETALLE POR ÁREA / GRÁFICOS)
+   ========================================================= */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.65) !important;
+  backdrop-filter: blur(5px) !important;
+  z-index: 10000 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease-in-out;
+}
+.modal-overlay.open {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+.modal-box {
+  background: #ffffff !important;
+  width: 92% !important;
+  max-width: 1100px !important;
+  max-height: 88vh !important;
+  border-radius: 16px !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  border: 1px solid #e2e8f0 !important;
+  transform: translateY(15px);
+  transition: transform 0.25s ease-out;
+}
+.modal-overlay.open .modal-box {
+  transform: translateY(0);
+}
+.modal-hd {
+  padding: 18px 24px !important;
+  background: #f8fafc !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+.modal-title {
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+}
+.modal-area-name {
+  font-size: 22px !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+  letter-spacing: -0.5px !important;
+}
+.modal-subtitle {
+  font-size: 13px !important;
+  color: #64748b !important;
+  font-weight: 500 !important;
+}
+.modal-close {
+  background: #f1f5f9 !important;
+  border: none !important;
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 50% !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  color: #475569 !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.2s !important;
+}
+.modal-close:hover {
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+.modal-kpis {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)) !important;
+  gap: 12px !important;
+  padding: 16px 24px !important;
+  background: #ffffff !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+}
+.modal-kpi {
+  background: #f8fafc !important;
+  padding: 10px 12px !important;
+  border-radius: 10px !important;
+  border: 1px solid #e2e8f0 !important;
+  text-align: center !important;
+}
+.modal-kv {
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  color: #00a650 !important;
+}
+.modal-kl {
+  font-size: 11px !important;
+  color: #64748b !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  margin-top: 2px !important;
+}
+
+.modal-body {
+  padding: 16px 24px 24px 24px !important;
+  overflow-y: auto !important;
+  flex: 1 !important;
+}
+.modal-tscroll {
+  width: 100% !important;
+  overflow-x: auto !important;
+  border-radius: 10px !important;
+  border: 1px solid #e2e8f0 !important;
+}
+.modal-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  font-size: 13px !important;
+  text-align: left !important;
+}
+.modal-table th {
+  background: #f1f5f9 !important;
+  color: #334155 !important;
+  font-weight: 700 !important;
+  padding: 10px 14px !important;
+  border-bottom: 2px solid #cbd5e1 !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 2 !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  white-space: nowrap !important;
+}
+.modal-table th:hover {
+  background: #e2e8f0 !important;
+}
+.modal-table td {
+  padding: 10px 14px !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  color: #1e293b !important;
+  white-space: nowrap !important;
+}
+.modal-table td.num {
+  text-align: right !important;
+  font-variant-numeric: tabular-nums !important;
+}
+.modal-table tbody tr:nth-child(even) {
+  background-color: #f8fafc !important;
+}
+.modal-table tbody tr:hover {
+  background-color: #f1f5f9 !important;
+}
+
+/* =========================================================
+   ESTILOS SECCIÓN: IMPACTO EN THP (PRODUCTIVIDAD)
+   ========================================================= */
+.thp-impact-section {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  margin: 32px 0 16px 0;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+.thp-header {
+  margin-bottom: 20px;
+  border-left: 4px solid #e11d48;
+  padding-left: 14px;
+}
+.thp-header h2 {
+  font-size: 20px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 4px 0;
+}
+.thp-header p {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0;
+}
+
+.thp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.thp-card {
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.thp-card-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #9f1239;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.thp-badge-loss {
+  background: #e11d48;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+.thp-metrics {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 8px;
+}
+.thp-submetric {
+  flex: 1;
+}
+.thp-submetric-label {
+  font-size: 11px;
+  color: #be123c;
+  font-weight: 600;
+}
+.thp-submetric-val {
+  font-size: 15px;
+  font-weight: 800;
+  color: #881337;
+}
+
+.thp-table-wrap {
+  width: 100%;
+  overflow-x: hidden;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+.thp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  table-layout: auto;
+}
+.thp-table th {
+  background: #f8fafc;
+  color: #475569;
+  font-weight: 700;
+  padding: 12px 10px;
+  text-align: left;
+  border-bottom: 2px solid #cbd5e1;
+  font-size: 12px;
+}
+.thp-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #1e293b;
+  vertical-align: middle;
+  word-wrap: break-word;
+}
+.thp-table tbody tr:hover {
+  background: #fff5f5;
+}
+.thp-loss-text {
+  color: #e11d48;
+  font-weight: 800;
+}
+.thp-neutral-text {
+  color: #64748b;
+  font-style: italic;
+}
+</style>
+</head>
+<body>
+
+<div id="loading-overlay" style="display:none;position:fixed;inset:0;background:rgba(255,255,255,0.92);z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:16px">
+  <div style="width:48px;height:48px;border:5px solid #f3f3f3;border-top:5px solid #FFE600;border-radius:50%;animation:spin 0.8s linear infinite"></div>
+  <div style="font-size:15px;color:#666;font-weight:600">Cargando datos...</div>
+</div>
+<style>@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+.detalle-wrap{overflow-x:auto;border-radius:12px;
+  box-shadow:rgba(149,157,165,.18) 0 4px 16px;background:#fff;}
+.detalle-tbl{width:100%;border-collapse:collapse;min-width:900px;font-size:13px;}
+.detalle-tbl th,.detalle-tbl td{padding:9px 14px;text-align:right;white-space:nowrap;}
+.dt-hora-hd,.dt-hora-cell{text-align:center;position:sticky;left:0;z-index:2;
+  background:#f5f7fa;font-weight:700;border-right:2px solid rgba(0,0,0,.07);}
+.dt-group-pu{background:#e8f9ee;color:#00a650;font-weight:700;font-size:12px;
+  text-align:center;border-bottom:2px solid #00a650;letter-spacing:.3px;}
+.dt-group-in{background:#f3e8ff;color:#7b1fa2;font-weight:700;font-size:12px;
+  text-align:center;border-bottom:2px solid #7b1fa2;border-left:3px solid #ddd;}
+.dt-col-pu{background:#fff;font-weight:600;font-size:11px;color:#00a650;
+  border-bottom:1px solid rgba(0,166,80,.18);text-align:center;}
+.dt-col-in{background:#fff;font-weight:600;font-size:11px;color:#7b1fa2;
+  border-bottom:1px solid rgba(123,31,162,.18);text-align:center;
+  border-left:3px solid #f0e8ff;}
+.dt-cell-pu{color:rgba(0,0,0,.78);}
+.dt-cell-in{color:rgba(0,0,0,.78);border-left:3px solid #f0e8ff;background:#fdf8ff;}
+.detalle-tbl tbody tr:hover td{background:#f4f8ff!important;}
+.detalle-tbl tbody tr:nth-child(even) td{background:rgba(0,0,0,.018);}
+.detalle-tbl tbody tr:nth-child(even) .dt-cell-in{background:rgba(123,31,162,.03);}
+.dt-footer td{background:#1a1a2e!important;color:#fff!important;
+  font-weight:700;font-size:13px;border-top:2px solid #000;}
+.dt-footer .dt-hora-cell{background:#111!important;color:#fff!important;}
+</style>
+
+<header class="ml-header">
+  <div class="header-r">
+    <span>Estas viendo:</span>
+    <div class="chip">CD-01 - MLC</div>
+    <div class="chip">Actualizado: <span id="last-update"></span></div>
+    <button type="button" class="vm-help-btn" id="vm-help-open">? Cómo usar</button>
+    <button type="button" class="vm-help-btn" id="vm-visits-open" aria-label="Libro de visitas" title="Libro de visitas">&#128065;</button>
+  </div>
+</header>
+
+<div class="modal-overlay" id="modal" onclick="closeModalOnBg(event)">
+  <div class="modal-box">
+    <div class="modal-hd">
+      <div class="modal-title">
+        <span class="modal-area-name" id="m-name">-</span>
+        <div>
+          <div id="m-badge" class="ac-badge badge-green">-</div>
+          <div class="modal-subtitle" id="m-subtitle">Detalle por hora</div>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">x</button>
+    </div>
+    <div class="modal-kpis" id="m-kpis"></div>
+    <div class="modal-body">
+      <div class="modal-tscroll">
+        <table class="modal-table">
+          <thead><tr>
+            <th onclick="mSort(0)">Fecha <span class="sort-icon" id="si-0">&#8645;</span></th>
+            <th onclick="mSort(1)">Hora <span class="sort-icon" id="si-1">&#8645;</span></th>
+            <th onclick="mSort(2)">Area <span class="sort-icon" id="si-2">&#8645;</span></th>
+            <th onclick="mSort(3)" class="num">SKU Únicos <span class="sort-icon" id="si-3">&#8645;</span></th>
+            <th onclick="mSort(4)" class="num">Total Unidades <span class="sort-icon" id="si-4">&#8645;</span></th>
+            <th onclick="mSort(8)" class="num">Profundidad <span class="sort-icon" id="si-8">&#8645;</span></th>
+            <th onclick="mSort(5)" class="num">Vol Total (L) <span class="sort-icon" id="si-5">&#8645;</span></th>
+            <th onclick="mSort(6)" class="num">Volumetria (L/un) <span class="sort-icon" id="si-6">&#8645;</span></th>
+            <th onclick="mSort(7)" class="num">Share guardado <span class="sort-icon" id="si-7">&#8645;</span></th>
+          </tr></thead>
+          <tbody id="m-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="page">
+  <div class="page-title">
+    <h1>Volumetria por Area - CD-01 MLC</h1>
+    <p>Put Away por area &middot; click en card para ver detalle
+      <span class="window-info" id="win-info">&#9201; Ultimas 24h</span>
+    </p>
+  </div>
+
+  <div class="control-bar">
+    <div class="tab-bar">
+      <button class="tab active" onclick="showTab('mz')">MEZANINE + HV</button>
+      <button class="tab" onclick="showTab('bl')">BL &middot; HS &middot; RK</button>
+      <button class="tab" onclick="showTab('inbound')">INBOUND</button>
+      <button class="tab" onclick="showTab('detalle')">Detalle</button>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Ver:</span>
+      <button class="fbtn active" data-m="u" onclick="setGlobalMode('u')">Unidades</button>
+      <button class="fbtn" data-m="v" onclick="setGlobalMode('v')">Volumetria</button>
+      <button class="fbtn" data-m="s" onclick="setGlobalMode('s')">Share</button>
+    </div>
+    <div class="filter-group" id="periodo-bar">
+      <span class="filter-label">Periodo:</span>
+      <button class="fbtn active" data-h="24" onclick="setWindow(24)">24h</button>
+      <button class="fbtn" data-h="48" onclick="setWindow(48)">48h</button>
+      <button class="fbtn" data-h="72" onclick="setWindow(72)">72h</button>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Granularidad:</span>
+      <button class="fbtn active" data-g="hora" onclick="setGranMode('hora')">Hora</button>
+      <button class="fbtn" data-g="semana" onclick="setGranMode('semana')">Semana</button>
+    </div>
+  </div>
+
+  <!-- selector Semana -->
+  <div id="sem-bar" style="display:none;margin-bottom:12px">
+    <div class="turno-box">
+      <span class="turno-lbl">Semana:</span>
+      <button class="fbtn active" data-sem="actual" onclick="setSemSel('actual')">Esta semana</button>
+      <button class="fbtn" data-sem="anterior" onclick="setSemSel('anterior')">Semana anterior</button>
+    </div>
+  </div>
+
+  <div class="turno-bar">
+    <div class="turno-box">
+      <span class="turno-lbl">Fecha:</span>
+      <select class="turno-sel" id="turno-date">
+        <option value="">Todas</option>
+      </select>
+      <span class="turno-sep" style="margin:0 4px">|</span>
+      <span class="turno-lbl">Turno:</span>
+      <span class="turno-lbl">De</span>
+      <select class="turno-sel" id="turno-from" onchange="applyTurno()">
+        <option value="">inicio</option>
+      </select>
+      <span class="turno-sep">→</span>
+      <span class="turno-lbl">Hasta</span>
+      <select class="turno-sel" id="turno-to" onchange="applyTurno()">
+        <option value="">fin</option>
+      </select>
+    </div>
+    <div class="turno-tag" id="turno-tag">
+      <span id="turno-tag-txt"></span>
+      <button class="turno-clr" onclick="clearTurno()" title="Quitar filtro turno">✕</button>
+    </div>
+  </div>
+
+  <div id="tab-mz" class="tab-content visible">
+    <div class="areas-grid" id="grid-mz"></div>
+  </div>
+  <div id="tab-bl" class="tab-content">
+    <div class="areas-grid" id="grid-bl"></div>
+  </div>
+  <div id="tab-inbound" class="tab-content">
+    <div class="areas-grid" id="grid-inbound"></div>
+    <div class="tote-section-lbl" id="tote-lbl">&#9679; Toteabilidad por hora &mdash; CHECKIN &amp; DCI</div>
+    <div class="tote-grid" id="tote-grid"></div>
+  </div>
+
+  <div id="tab-detalle" class="tab-content">
+    <div class="detalle-wrap" id="detalle-wrap"></div>
+  </div>
+
+  <div class="pfooter">
+    <span>Panel Volumetría &middot; Volumetria por Area CD-01 MLC</span>
+    <span>&#8646; <span id="ts"></span><span class="rtag">cada 1 hora</span></span>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+<style id="volumetria-mockup-upgrade">
+:root{--side-w:72px;--side-w-open:248px;--nav:#2a2a2e;--yellow:#ffe600;--paper:#f5f7fa;--line:#e5e7eb}body{background:var(--paper)!important}.vm-side{position:fixed;inset:0 auto 0 0;width:var(--side-w);z-index:100;background:var(--nav);padding:10px 8px;box-shadow:2px 0 14px #0002;transition:width .18s ease}.vm-side.open{width:var(--side-w-open)}.vm-brand{height:44px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;color:var(--yellow);font-size:19px;font-weight:900}.vm-brand span,.vm-nav span{display:none;white-space:nowrap}.vm-side.open .vm-brand{justify-content:flex-start;padding:0 12px;gap:10px}.vm-side.open .vm-brand span,.vm-side.open .vm-nav span{display:block}.vm-nav{display:flex;flex-direction:column;gap:5px}.vm-nav button{height:46px;width:100%;border:0;border-radius:9px;background:transparent;color:#d1d5db;display:flex;align-items:center;gap:13px;padding:0 14px;cursor:pointer;font:600 12px Arial;text-align:left}.vm-nav button:hover{background:#ffffff13;color:#fff}.vm-nav button.active{background:var(--yellow);color:#1e2360;font-weight:800}.vm-nav svg{width:20px;height:20px;flex:none;stroke:currentColor;fill:none;stroke-width:2}.vm-toggle{position:absolute;top:12px;right:-11px;width:23px;height:23px;border:2px solid var(--nav);border-radius:50%;background:var(--yellow);color:#1e2360;font-weight:900;cursor:pointer}.vm-side.open .vm-toggle{transform:rotate(180deg)}.ml-header{margin-left:var(--side-w)!important;height:62px!important;padding:0 28px!important;background:linear-gradient(180deg,#ffe600,#ffd600)!important;display:flex!important;align-items:center!important;justify-content:space-between!important;position:sticky!important;top:0!important;z-index:50!important}.vm-head{display:flex;gap:13px;align-items:center}.vm-head b{font-size:16px}.vm-head i{height:24px;border-left:1px solid #0003}.vm-head small{font-weight:700;color:#1e2360cc}.page{margin-left:var(--side-w)!important;width:calc(100% - var(--side-w))!important;max-width:none!important;padding:26px 28px 32px!important}.tab-bar{display:none!important}.control-bar,.turno-box{background:#fff!important;border:1px solid var(--line)!important;border-radius:12px!important;box-shadow:0 4px 12px #0f172a0d!important}.fbtn{border-radius:999px!important}.fbtn.active{background:#1e2360!important;box-shadow:0 3px 10px #1e236038!important}.area-card,.tote-card{border:1px solid var(--line)!important;border-radius:14px!important;box-shadow:0 5px 16px #0f172a14!important}.vm-impact{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 5px 16px #0f172a14;overflow:hidden}.vm-impact header{padding:20px 22px 14px;border-bottom:1px solid var(--line)}.vm-impact h2{font-size:18px}.vm-impact p{margin-top:5px;color:#6b7280;font-size:12px}.vm-scroll{overflow:auto}.vm-impact table{width:100%;min-width:1050px;border-collapse:collapse;font-size:12px}.vm-impact th{background:#f8fafc;color:#64748b;font-size:10px;text-transform:uppercase;letter-spacing:.06em;text-align:right;padding:11px 14px}.vm-impact td{padding:12px 14px;border-top:1px solid #eef2f7;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}.vm-impact th:first-child,.vm-impact td:first-child{text-align:left;font-weight:800;color:#111827}.vm-impact tr:hover td{background:#fffdf0}.vm-loss{color:#b91c1c;font-weight:850}.vm-na{color:#94a3b8}@media(max-width:760px){.vm-side{display:none}.ml-header,.page{margin-left:0!important;width:100%!important}.page{padding:18px 14px 28px!important}.vm-head small{display:none}}
+.areas-grid,.tote-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,560px),1fr));min-width:0}.area-card,.tote-card{min-width:0}.page{box-sizing:border-box}body:has(.vm-side.open) .ml-header{margin-left:var(--side-w-open)!important}body:has(.vm-side.open) .page{margin-left:var(--side-w-open)!important;width:calc(100% - var(--side-w-open))!important}@media(max-width:1180px){.areas-grid,.tote-grid{grid-template-columns:minmax(0,1fr)}}
+</style>
+<aside class="vm-side open" id="vm-side">
+  <button type="button" class="vm-toggle" aria-label="Contraer menú">›</button>
+  <div class="vm-brand">▣ <span>Volumetría</span></div>
+  <nav class="vm-nav" aria-label="Procesos de volumetría">
+    <button type="button" class="active" data-vol-section="put_tote" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21V9l9-5 9 5v12M7 21v-5h3v5m4 0v-5h3v5M7 12h2m3 0h2m3 0h1"/></svg><span>Putaway Toteable</span></button>
+    <button type="button" data-vol-section="put_no_tote"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21V9l9-5 9 5v12M7 21v-5h3v5m4 0v-5h3v5M7 12h2m3 0h2m3 0h1"/></svg><span>Putaway No Toteable</span></button>
+    <button type="button" data-vol-section="inbound"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V5h3m10 0h3v3M4 16v3h3m10 0h3v-3"/><rect x="8" y="9" width="8" height="6" rx="1"/><path d="M8 12h8"/></svg><span>Checkin + DCI</span></button>
+  </nav>
+</aside>
+<div class="vm-help-overlay" id="vm-help-overlay" aria-hidden="true">
+  <section class="vm-help-dialog" role="dialog" aria-modal="true" aria-labelledby="vm-help-title">
+    <button type="button" class="vm-help-close" id="vm-help-close" aria-label="Cerrar ayuda">×</button>
+    <p class="vm-help-eyebrow">GUÍA RÁPIDA</p>
+    <h2 id="vm-help-title">¿Qué muestra este panel?</h2>
+    <p>Permite ver cómo el volumen y la volumetría por hora se distribuyen entre Putaway e Inbound en CD-01.</p>
+    <div class="vm-help-items">
+      <div><b>1</b><span><strong>Putaway Toteable / No Toteable</strong><br>Revisa unidades, litros, L/unidad, SKUs y llenado de bin por área.</span></div>
+      <div><b>2</b><span><strong>Checkin + DCI</strong><br>Compara CI y DCI, separados entre Toteable y No Toteable.</span></div>
+      <div><b>3</b><span><strong>Línea roja</strong><br>Es la volumetría de referencia del área. Compárala con las barras en la vista <em>Volumetría</em>.</span></div>
+      <div><b>4</b><span><strong>Filtros</strong><br>Cambia entre Volumetría y Unidades; después ajusta período, fecha y turno.</span></div>
+    </div>
+  </section>
+</div>
+<style id="vm-help-style">
+.vm-help-btn{border:1px solid rgba(0,0,0,.16);background:#fff;border-radius:999px;padding:6px 11px;color:#1f2937;font:700 12px Arial;cursor:pointer;white-space:nowrap;box-shadow:0 1px 2px #0001}.vm-help-btn:hover{background:#1e2360;color:#fff;border-color:#1e2360}.vm-help-overlay{position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(15,23,42,.45);backdrop-filter:blur(2px)}.vm-help-overlay.open{display:flex}.vm-help-dialog{position:relative;width:min(610px,100%);background:#fff;border-radius:18px;padding:28px;box-shadow:0 22px 60px #0004;color:#172033}.vm-help-close{position:absolute;right:16px;top:13px;border:0;background:transparent;color:#64748b;font-size:27px;cursor:pointer;line-height:1}.vm-help-eyebrow{font-size:10px;font-weight:900;letter-spacing:.12em;color:#1e2360;margin-bottom:7px}.vm-help-dialog h2{font-size:23px;margin-bottom:8px}.vm-help-dialog>p{color:#64748b;line-height:1.45}.vm-help-items{display:grid;gap:10px;margin-top:20px}.vm-help-items>div{display:flex;align-items:flex-start;gap:11px;padding:11px;border-radius:10px;background:#f7f8fc;font-size:12px;line-height:1.4}.vm-help-items b{display:grid;place-items:center;min-width:23px;height:23px;border-radius:50%;background:#ffe600;color:#1e2360;font-size:12px}.vm-help-items strong{color:#111827}.vm-help-items em{font-style:normal;font-weight:800;color:#1e2360}@media(max-width:680px){.vm-help-btn{padding:5px 8px;font-size:11px}.vm-help-dialog{padding:23px 18px}.vm-help-dialog h2{font-size:20px}.header-r{gap:5px}.header-r>span{display:none}}
+</style>
+
+
+
+<style id="visit-log-style">
+#visit-modal{display:none;position:fixed;inset:0;z-index:10030;background:rgba(15,23,42,.52);align-items:center;justify-content:center;padding:16px}
+#visit-modal.is-open{display:flex}
+.visit-box{width:min(720px,100%);max-height:82vh;overflow:hidden;background:#fff;border-radius:16px;box-shadow:0 24px 70px rgba(0,0,0,.28);color:#17202a;font-family:inherit}
+.visit-hd{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid #e8ebef}
+.visit-title{font-size:18px;font-weight:800;margin:0}
+.visit-subtitle{font-size:12px;color:#687385;margin-top:4px}
+.visit-close{border:0;background:#f1f3f5;border-radius:9px;width:34px;height:34px;font-size:21px;cursor:pointer;color:#4b5563}
+.visit-body{padding:14px 22px 22px;overflow:auto;max-height:65vh}
+.visit-table{width:100%;border-collapse:collapse;font-size:13px}
+.visit-table th,.visit-table td{padding:11px 10px;border-bottom:1px solid #edf0f2;text-align:left}
+.visit-table th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#687385;background:#f8f9fa;position:sticky;top:0}
+.visit-empty{color:#687385;text-align:center!important;padding:28px 10px!important}
+@media(max-width:600px){.visit-hd{padding:15px}.visit-body{padding:10px 15px 15px}.visit-table{font-size:12px}.visit-table th,.visit-table td{padding:9px 6px}}
+</style>
+<div id="visit-modal" role="dialog" aria-modal="true" aria-labelledby="visit-title">
+  <div class="visit-box">
+    <div class="visit-hd">
+      <div><h2 class="visit-title" id="visit-title">Libro de visitas</h2><div class="visit-subtitle" id="visit-summary">Personas que abrieron este panel</div></div>
+      <button type="button" class="visit-close" id="visit-close" aria-label="Cerrar">&times;</button>
+    </div>
+    <div class="visit-body">
+      <table class="visit-table"><thead><tr><th>LDAP</th><th>Última apertura</th><th>Visitas</th></tr></thead><tbody id="visit-rows"><tr><td colspan="3" class="visit-empty">Cargando…</td></tr></tbody></table>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+<!-- SECCIÓN IMPACTO NEGATIVO EN THP (PRODUCTIVIDAD POR REP) -->
+<div class="thp-impact-section" id="seccion-impacto-thp">
+  <div class="thp-header">
+    <h2>Impacto Negativo en THP (Productividad por Rep)</h2>
+    <p>Análisis de caída directa en la productividad por operador (unidades/hora o P_NETA) ante variaciones de volumetría por unidad (L/un).</p>
+  </div>
+
+  <div class="thp-grid">
+    <div class="thp-card">
+      <div class="thp-card-title">
+        <span>Putaway MZ0</span>
+        <span class="thp-badge-loss">-12.4% en THP</span>
+      </div>
+      <div class="thp-metrics">
+        <div class="thp-submetric">
+          <div class="thp-submetric-label">THP Óptimo</div>
+          <div class="thp-submetric-val">310.3 un/h/rep</div>
+        </div>
+        <div class="thp-submetric">
+          <div class="thp-submetric-label">Con Impacto (>1.94 L/un)</div>
+          <div class="thp-submetric-val">271.8 un/h/rep</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="thp-card">
+      <div class="thp-card-title">
+        <span>Putaway HV3</span>
+        <span class="thp-badge-loss">-15.3% en THP</span>
+      </div>
+      <div class="thp-metrics">
+        <div class="thp-submetric">
+          <div class="thp-submetric-label">THP Óptimo</div>
+          <div class="thp-submetric-val">424.3 un/h/rep</div>
+        </div>
+        <div class="thp-submetric">
+          <div class="thp-submetric-label">Con Impacto (>1.45 L/un)</div>
+          <div class="thp-submetric-val">359.4 un/h/rep</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="thp-card">
+      <div class="thp-card-title">
+        <span>CI Toteable</span>
+        <span class="thp-badge-loss">-14.2% en THP</span>
+      </div>
+      <div class="thp-metrics">
+        <div class="thp-submetric">
+          <div class="thp-submetric-label">THP Óptimo</div>
+          <div class="thp-submetric-val">240.8 un/h/rep</div>
+        </div>
+        <div class="thp-submetric">
+          <div class="thp-submetric-label">Con Impacto (>3.73 L/un)</div>
+          <div class="thp-submetric-val">206.6 un/h/rep</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="thp-card">
+      <div class="thp-card-title">
+        <span>DCI Toteable</span>
+        <span class="thp-badge-loss">-20.5% en THP</span>
+      </div>
+      <div class="thp-metrics">
+        <div class="thp-submetric">
+          <div class="thp-submetric-label">THP Óptimo</div>
+          <div class="thp-submetric-val">595.9 un/h/rep</div>
+        </div>
+        <div class="thp-submetric">
+          <div class="thp-submetric-label">Con Impacto (>3.41 L/un)</div>
+          <div class="thp-submetric-val">473.7 un/h/rep</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="thp-table-wrap">
+    <table class="thp-table">
+      <thead>
+        <tr>
+          <th>Proceso / Área</th>
+          <th>L/un Óptimo</th>
+          <th>THP Óptimo (Rep)</th>
+          <th>Umbral de Impacto</th>
+          <th>THP con Impacto</th>
+          <th>Caída en THP (%)</th>
+          <th>Punto Crítico</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><b>Putaway MZ0</b></td>
+          <td>1.79 L/un</td>
+          <td>310.3 un/h</td>
+          <td>1.94 L/un</td>
+          <td>271.8 un/h</td>
+          <td class="thp-loss-text">−12.4%</td>
+          <td class="thp-loss-text">2.80 L/un (−28.4%)</td>
+        </tr>
+        <tr>
+          <td><b>Putaway HV3</b></td>
+          <td>1.22 L/un</td>
+          <td>424.3 un/h</td>
+          <td>1.45 L/un</td>
+          <td>359.4 un/h</td>
+          <td class="thp-loss-text">−15.3%</td>
+          <td class="thp-loss-text">1.71 L/un (−20.5%)</td>
+        </tr>
+        <tr>
+          <td><b>CI Toteable</b></td>
+          <td>3.08 L/un</td>
+          <td>240.8 un/h</td>
+          <td>3.73 L/un</td>
+          <td>206.6 un/h</td>
+          <td class="thp-loss-text">−14.2%</td>
+          <td class="thp-neutral-text">—</td>
+        </tr>
+        <tr>
+          <td><b>DCI Toteable</b></td>
+          <td>3.09 L/un</td>
+          <td>595.9 un/h</td>
+          <td>3.41 L/un</td>
+          <td>473.7 un/h</td>
+          <td class="thp-loss-text">−20.5%</td>
+          <td class="thp-loss-text">3.41 L/un (−20.5%)</td>
+        </tr>
+        <tr>
+          <td><b>Putaway RK0</b></td>
+          <td>44.86 L/un</td>
+          <td>159.8 un/h</td>
+          <td>56.95 L/un</td>
+          <td>137.4 un/h</td>
+          <td class="thp-loss-text">−14.0%</td>
+          <td class="thp-neutral-text">—</td>
+        </tr>
+        <tr>
+          <td><b>Putaway MZ1, MZ2, MZ3</b></td>
+          <td>3.68 – 5.45 L/un</td>
+          <td>235 – 251 un/h</td>
+          <td class="thp-neutral-text">Sin umbral crítico</td>
+          <td class="thp-neutral-text">Estable</td>
+          <td class="thp-neutral-text">Sin caída consistente</td>
+          <td class="thp-neutral-text">—</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+
+
+<script src="vendor/chart.umd.min.js"></script>
+<script src="data/sample-data.js"></script>
+<script>// Carga de datos: usa los datos de ejemplo (data/sample-data.js) o, si se sirve por HTTP,
+// intenta leer data/<nombre>.json (p. ej. el JSON que genera el workflow n8n).
+function loadDataset(name){
+  // Espera a que se carguen todos los scripts de la página antes de entregar los datos
+  var ready=new Promise(function(res){ if(document.readyState!=='loading') setTimeout(res,0); else document.addEventListener('DOMContentLoaded',res); });
+  if(window.SAMPLE_DATA && window.SAMPLE_DATA[name]) return ready.then(function(){ return window.SAMPLE_DATA[name]; });
+  return ready.then(function(){ return fetch('data/'+name+'.json').then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); }); });
+}
+
+// DATOS
+var DATA = [];
+var DATA_TOTE = [];
+var ACT_TOTE_CHARTS = {};
+var TOTE_MODE = 'u';
+document.getElementById('loading-overlay').style.display='flex';
+Promise.all([
+  loadDataset("volumetria").catch(function(e){ console.error('volumetria err:',e); return []; }),
+  loadDataset("toteabilidad").catch(function(){ return []; })
+]).then(function(results){
+  var d=results[0], dt=results[1];
+  DATA = Array.isArray(d) ? d : (d.rows || d);
+  DATA_TOTE = Array.isArray(dt) ? dt : (dt && dt.rows ? dt.rows : []);
+  console.log('DATA rows:', DATA.length, DATA.slice(0,2));
+  document.getElementById('loading-overlay').style.display='none';
+  var _tl=document.getElementById('tote-lbl');
+  var _tg=document.getElementById('tote-grid');
+  if(!DATA_TOTE.length){ if(_tl)_tl.style.display='none'; if(_tg)_tg.style.display='none'; }
+  populateDateSelect();
+  populateHoraSelect();
+  var fd=getFilteredData(24);
+  renderGrid('grid-mz',AREAS_TAB1,fd);
+  renderGrid('grid-bl',AREAS_TAB2,fd);
+  renderGrid('grid-inbound',AREAS_INBOUND,fd);
+  if(DATA_TOTE.length) renderToteGrid(getFilteredTote());
+  if(CURRENT_TAB==='detalle') renderDetalleTable();
+  document.getElementById('ts').textContent=new Date().toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('last-update').textContent=new Date().toLocaleDateString('es-CL',{day:'2-digit',month:'2-digit',year:'numeric'});
+}).catch(function(e){
+  console.error(e);
+  document.getElementById('loading-overlay').innerHTML='<div style="text-align:center"><div style="font-size:18px;color:#666;margin-bottom:8px">Error cargando datos</div><button onclick="location.reload()" style="padding:8px 20px;background:#3483fa;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px">Reintentar</button></div>';
+});
+
+// CONFIG
+var AREAS_TAB1    = ['MZ0','MZ1','MZ2','MZ3','HV3'];
+var AREAS_TAB2    = ['BL0','HS','RK0','RS0'];
+var AREAS_INBOUND = ['CI_TOT','CI_NOT','DCI_TOT','DCI_NOT'];
+var AREA_COLOR = {
+  HV3:'#3483fa',
+  MZ0:'#00a650', MZ1:'#00a650', MZ2:'#00a650', MZ3:'#00a650',
+  HS:'#f5a623',  RK0:'#f5a623', RS0:'#f5a623',
+  BL0:'#9e9e9e',
+  CI:'#0097a7',  DCI:'#7b1fa2',
+  INBOUND:'#7b1fa2',
+  CI_TOT:'#0097a7',  CI_NOT:'#80CBC4',
+  DCI_TOT:'#7b1fa2', DCI_NOT:'#CE93D8'
+};
+var AREA_BADGE = {
+  HV3:'badge-blue',
+  MZ0:'badge-green', MZ1:'badge-green',
+  MZ2:'badge-green', MZ3:'badge-green',
+  HS:'badge-yellow',  RK0:'badge-yellow', RS0:'badge-yellow',
+  BL0:'badge-gray',
+  CI:'badge-blue',   DCI:'badge-yellow',
+  INBOUND:'badge-blue',
+  CI_TOT:'badge-blue',  CI_NOT:'badge-green',
+  DCI_TOT:'badge-yellow', DCI_NOT:'badge-gray'
+};
+var AREA_LABEL = {
+  CI_TOT:'CI Toteable',  CI_NOT:'CI No Toteable',
+  DCI_TOT:'DCI Toteable', DCI_NOT:'DCI No Toteable'
+};
+var WINDOW_H   = 24;
+var GRAN_MODE  = 'hora';   // 'hora' | 'dia' | 'semana'
+var DIA_SEL    = 0;        // 0=hoy, 1=ayer, 2=anteayer (offset desde fecha máx en data)
+var SEM_SEL    = 'actual'; // 'actual' | 'anterior'
+var ACT_CHARTS = {};
+
+// Volumetría óptima por área + impacto UPH por cada 0.1L
+// dir:'baja'  → si vol BAJA de óptimo, UPH SUBE (menor vol = mejor). Sobre la línea = pierde UPH.
+// dir:'sube'  → si vol SUBE sobre óptimo, UPH SUBE (mayor vol = mejor). Bajo la línea = pierde UPH.
+var OPT_VOL = {
+  MZ0: { vol:2.2,  uph:6.7,  dir:'baja', note:'sobre la línea = −6.7 UPH c/0.1L' },
+  MZ1: { vol:4.7,  uph:1.0,  dir:'sube', note:'bajo la línea = −1.0 UPH c/0.1L'  },
+  MZ2: { vol:4.6,  uph:2.6,  dir:'sube', note:'bajo la línea = −2.6 UPH c/0.1L'  },
+  MZ3: { vol:4.7,  uph:3.7,  dir:'sube', note:'bajo la línea = −3.7 UPH c/0.1L'  },
+  HV3: { vol:2.3,  uph:2.6,  dir:'baja', note:'sobre la línea = −2.6 UPH c/0.1L' },
+  BL0: { vol:24.6, uph:0.4,  dir:'baja', note:'sobre la línea = −0.4 UPH c/0.1L' },
+  HS:  { vol:33.4, uph:0.2,  dir:'baja', note:'sobre la línea = −0.2 UPH c/0.1L' },
+  RK0: { vol:50.5, uph:0.2,  dir:'baja', note:'sobre la línea = −0.2 UPH c/0.1L' }
+};
+// BIN óptimo y crítico por área (P25 = bueno, P75 = crítico)
+var OPT_BIN = {
+  MZ0: { opt:53, crit:58, driver:true  },
+  MZ1: { opt:56, crit:62, driver:true  },
+  MZ2: { opt:53, crit:60, driver:true  },
+  MZ3: { opt:49, crit:57, driver:false },
+  HV3: { opt:41, crit:45, driver:true  },
+  BL0: { opt:61, crit:69, driver:false },
+  HS:  { opt:38, crit:43, driver:true  },
+  RK0: { opt:40, crit:53, driver:false }
+};
+
+// TIEMPO
+function rowToTs(r){
+  var parts = String(r.FECHA||'').split('-');
+  var base  = parts.length===3
+    ? new Date(+parts[0],+parts[1]-1,+parts[2]).getTime()
+    : new Date(String(r.FECHA||'')).getTime();
+  return base + (parseInt(r.HORA,10)||0)*3600000;
+}
+function getMaxTs(){
+  var m=0;
+  DATA.forEach(function(r){ var t=rowToTs(r); if(t>m) m=t; });
+  return m;
+}
+var TURNO_START=null, TURNO_END=null, TURNO_DATE='';
+
+// Helper: fechas únicas ordenadas desc (más reciente primero)
+function getUniqueDates(){
+  var d={};
+  DATA.forEach(function(r){ if(r.FECHA) d[String(r.FECHA)]=1; });
+  return Object.keys(d).sort().reverse();
+}
+function getFilteredData(h){
+  var rows;
+  if(GRAN_MODE==='hora'){
+    var wh=h!==undefined?h:WINDOW_H;
+    var cut=getMaxTs()-wh*3600000;
+    rows=DATA.filter(function(r){ return rowToTs(r)>=cut; });
+    if(TURNO_DATE) rows=rows.filter(function(r){ return String(r.FECHA)===TURNO_DATE; });
+    if(TURNO_START!==null && TURNO_END!==null){
+      rows=rows.filter(function(r){
+        var hora=+r.HORA;
+        return TURNO_START<=TURNO_END?(hora>=TURNO_START&&hora<=TURNO_END):(hora>=TURNO_START||hora<=TURNO_END);
+      });
+    }
+  } else { // semana
+    // Día a día de 7 días: actual = últimos 7 días, anterior = 7 días antes
+    var fechas=getUniqueDates();
+    var window=SEM_SEL==='actual'?fechas.slice(0,7):fechas.slice(7,14);
+    rows=DATA.filter(function(r){ return window.indexOf(String(r.FECHA))!==-1; });
+  }
+  return rows;
+}
+function populateDateSelect(){
+  var dates=[];
+  DATA.forEach(function(r){ if(r.FECHA && dates.indexOf(String(r.FECHA))===-1) dates.push(String(r.FECHA)); });
+  dates.sort().reverse();
+  dates=dates.slice(0,3); // solo hoy, ayer y anteayer
+  var sel=document.getElementById('turno-date');
+  if(!sel) return;
+  sel.innerHTML='<option value="">Todas las fechas</option>';
+  dates.forEach(function(d){
+    var opt=document.createElement('option');
+    opt.value=d; opt.textContent=d;
+    sel.appendChild(opt);
+  });
+}
+function populateHoraSelect(){
+  var horas=[];
+  DATA.forEach(function(r){
+    var h=parseInt(r.HORA,10);
+    if(!isNaN(h) && horas.indexOf(h)===-1) horas.push(h);
+  });
+  horas.sort(function(a,b){return a-b;});
+  ['turno-from','turno-to'].forEach(function(sid){
+    var sel=document.getElementById(sid);
+    if(!sel) return;
+    var cur=sel.value;
+    var isFrom=sid==='turno-from';
+    sel.innerHTML='';
+    horas.forEach(function(h){
+      var opt=document.createElement('option');
+      opt.value=String(h); opt.textContent=h+'h';
+      if(String(h)===cur) opt.selected=true;
+      sel.appendChild(opt);
+    });
+    // default: De=primera hora disponible, Hasta=última
+    if(!cur && horas.length){
+      sel.value=isFrom?String(horas[0]):String(horas[horas.length-1]);
+    }
+  });
+}
+function refreshAll(){
+  var fd=getFilteredData();
+  renderGrid('grid-mz',AREAS_TAB1,fd);
+  renderGrid('grid-bl',AREAS_TAB2,fd);
+  renderGrid('grid-inbound',AREAS_INBOUND,fd);
+  renderToteGrid(getFilteredTote());
+  renderDetalleTable();
+  setGlobalMode(CHART_MODE);
+}
+function applyTurno(){
+  var d=document.getElementById('turno-date').value;
+  var fv=document.getElementById('turno-from').value;
+  var tv=document.getElementById('turno-to').value;
+  TURNO_DATE=d||'';
+  var fs=fv!==''?parseInt(fv,10):null;
+  var ts=tv!==''?parseInt(tv,10):null;
+  TURNO_START=(fs!==null&&ts!==null)?fs:null;
+  TURNO_END  =(fs!==null&&ts!==null)?ts:null;
+  var parts=[];
+  if(TURNO_DATE) parts.push(TURNO_DATE);
+  if(TURNO_START!==null){
+    var noc=TURNO_START>TURNO_END;
+    parts.push(TURNO_START+'h → '+TURNO_END+'h'+(noc?' (nocturno)':''));
+  }
+  if(parts.length){
+    document.getElementById('turno-tag-txt').textContent=parts.join(' · ');
+    document.getElementById('turno-tag').classList.add('on');
+  } else {
+    document.getElementById('turno-tag').classList.remove('on');
+  }
+  refreshAll();
+}
+function clearTurno(){
+  TURNO_START=null; TURNO_END=null; TURNO_DATE='';
+  document.getElementById('turno-date').value='';
+  populateHoraSelect();
+  document.getElementById('turno-tag').classList.remove('on');
+  refreshAll();
+}
+
+
+// FORMATO
+function fmt(n){
+  return Math.round(n||0).toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+}
+function fmtD(n,dec){
+  if(n==null||n==='') return '-';
+  var v=parseFloat(n);
+  return isNaN(v)?'-':v.toFixed(dec||3)
+    .replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+}
+
+// AGREGACION POR AREA
+function buildAreaAgg(area, fdata){
+  var rows=fdata.filter(function(r){ return r.AREA===area; });
+  var map={}, keys=[];
+  rows.forEach(function(r){
+    var key;
+    // dia = hora a hora (clave = nro hora); semana = día a día (clave = FECHA); hora = FECHA|HORA
+    if(GRAN_MODE==='dia')    key=String(+r.HORA||0);          // agrupado por hora
+    else if(GRAN_MODE==='semana') key=String(r.FECHA||'');    // agrupado por día
+    else                     key=String(r.FECHA||'')+'|'+String(r.HORA||'0');
+    if(!map[key]){
+      map[key]={u:0,v:0,s:0,fecha:String(r.FECHA||''),hora:+r.HORA||0};
+      keys.push(key);
+    }
+    map[key].u+=(+r.Cantidad_Total_Unidades||0);
+    map[key].v+=(+r.Volumen_Total_Litros||0);
+    map[key].s+=(+r.SKUs_Distintos||0);
+  });
+  // Ordenar
+  keys.sort(function(a,b){
+    if(GRAN_MODE==='dia') return +a-+b;    // numérico por hora
+    var da=map[a].fecha+(GRAN_MODE==='hora'?String(map[a].hora).padStart(2,'0'):'');
+    var db=map[b].fecha+(GRAN_MODE==='hora'?String(map[b].hora).padStart(2,'0'):'');
+    return da<db?-1:da>db?1:0;
+  });
+  var totalU=0, totalV=0, totalSKU=0;
+  keys.forEach(function(k){ totalU+=map[k].u; totalV+=map[k].v; totalSKU+=map[k].s; });
+  var labels=keys.map(function(k){
+    var d=map[k];
+    if(GRAN_MODE==='dia') return k+'h';    // "8h", "9h" ...
+    var p=d.fecha.split('-');
+    var lbl=p.length===3?p[2]+'/'+p[1]:d.fecha;
+    if(GRAN_MODE==='semana') return lbl;   // "15/08"
+    return lbl+' '+d.hora+'h';            // "15/08 8h"
+  });
+  var bf=null;
+  rows.forEach(function(r){ if(r.Binfullness!=null&&r.Binfullness>0) bf=r.Binfullness; });
+  var PUTAWAY_AREAS=['MZ0','MZ1','MZ2','MZ3','HV3','BL0','HS','RK0','RS0'];
+  var hourTotals={};
+  fdata.forEach(function(r){
+    if(PUTAWAY_AREAS.indexOf(r.AREA)===-1) return; // solo putaway en denominador
+    // misma clave que map para que el share matchee en cualquier granularidad
+    var hk;
+    if(GRAN_MODE==='semana') hk=String(r.FECHA||'');
+    else                     hk=String(r.FECHA||'')+'|'+String(r.HORA||'0');
+    hourTotals[hk]=(hourTotals[hk]||0)+(+r.Cantidad_Total_Unidades||0);
+  });
+  return {
+    totalU:totalU, totalV:totalV, totalSKU:totalSKU,
+    profundidad: totalSKU ? totalU/totalSKU : 0,
+    volPU: totalU?totalV/totalU:0,
+    periodos:keys.length, labels:labels,
+    binfullness: bf,
+    units:    keys.map(function(k){ return map[k].u; }),
+    vols:     keys.map(function(k){ return Math.round(map[k].v*100)/100; }),
+    volsPerU: keys.map(function(k){ return map[k].u>0?Math.round(map[k].v/map[k].u*1000)/1000:0; }),
+    shares:   keys.map(function(k){ var ht=hourTotals[k]||0; return ht>0?Math.round(map[k].u/ht*1000)/10:0; })
+  };
+}
+
+// MODO GLOBAL
+var CHART_MODE = 'u';
+function setGlobalMode(mode){
+  CHART_MODE = mode;
+  document.querySelectorAll('.fbtn[data-m]').forEach(function(b){
+    b.classList.toggle('active', b.dataset.m === mode);
+  });
+  Object.keys(ACT_CHARTS).forEach(function(cid){
+    var area = cid.replace('ch-','');
+    applyMode(area, mode);
+  });
+}
+function applyMode(area, mode){
+  var obj = ACT_CHARTS['ch-'+area];
+  if(!obj) return;
+  // Reference line: only show in volumetria mode
+  var noteEl = document.getElementById('note-'+area);
+  var showRef = (mode==='v' && obj.optRef);
+  if(obj.instance.data.datasets[1]){
+    obj.instance.data.datasets[1].hidden = !showRef;
+  }
+  if(noteEl) noteEl.style.display = showRef ? 'flex' : 'none';
+  if(mode==='u'){
+    obj.instance.data.datasets[0].data = obj.units;
+    obj.instance.options.scales.y.ticks.callback = function(v){ return v>=1000?(v/1000).toFixed(0)+'K':v; };
+    obj.instance.options.plugins.tooltip.callbacks.label = function(ctx){ return ' '+(+ctx.parsed.y).toLocaleString('es-CL')+' un'; };
+  } else if(mode==='v'){
+    obj.instance.data.datasets[0].data = obj.volsPerU;
+    obj.instance.options.scales.y.ticks.callback = function(v){ return v.toFixed(1); };
+    obj.instance.options.plugins.tooltip.callbacks.label = function(ctx){ return ' '+ctx.parsed.y.toFixed(1)+' L/un'; };
+  } else {
+    obj.instance.data.datasets[0].data = obj.shares;
+    obj.instance.options.scales.y.ticks.callback = function(v){ return v.toFixed(1)+'%'; };
+    obj.instance.options.plugins.tooltip.callbacks.label = function(ctx){ return ' '+ctx.parsed.y.toFixed(1)+'%'; };
+  }
+  obj.instance.update();
+}
+
+// TOGGLE CHART MODE
+function toggleChart(area, mode, ev){
+  ev.stopPropagation();
+  var obj = ACT_CHARTS['ch-'+area];
+  if(!obj) return;
+  var btnU = document.getElementById('btu-'+area);
+  var btnV = document.getElementById('btv-'+area);
+  var btnS = document.getElementById('bts-'+area);
+  [btnU,btnV,btnS].forEach(function(b){ if(b) b.classList.remove('active'); });
+  if(mode==='u'){
+    if(btnU) btnU.classList.add('active');
+    obj.instance.data.datasets[0].data = obj.units;
+    obj.instance.options.scales.y.ticks.callback = function(v){ return v.toLocaleString('es-CL'); };
+    obj.instance.options.plugins.tooltip.callbacks.label = function(ctx){ return ' '+ctx.parsed.y.toLocaleString('es-CL')+' un'; };
+  } else if(mode==='v'){
+    if(btnV) btnV.classList.add('active');
+    obj.instance.data.datasets[0].data = obj.volsPerU;
+    obj.instance.options.scales.y.ticks.callback = function(v){ return v.toFixed(2); };
+    obj.instance.options.plugins.tooltip.callbacks.label = function(ctx){ return ' '+ctx.parsed.y.toFixed(3)+' L/un'; };
+  } else {
+    if(btnS) btnS.classList.add('active');
+    obj.instance.data.datasets[0].data = obj.shares;
+    obj.instance.options.scales.y.ticks.callback = function(v){ return v.toFixed(1)+'%'; };
+    obj.instance.options.plugins.tooltip.callbacks.label = function(ctx){ return ' '+ctx.parsed.y.toFixed(1)+'% del total'; };
+  }
+  obj.instance.update();
+}
+
+// CARD HTML
+function buildCard(area, fdata){
+  var d     = buildAreaAgg(area, fdata);
+  var color = AREA_COLOR[area]||'#888';
+  var badge = AREA_BADGE[area]||'badge-gray';
+  var cid   = 'ch-'+area;
+  var aesc  = area.replace(/'/g,"\\'");
+  var INBOUND_SET=['CI_TOT','CI_NOT','DCI_TOT','DCI_NOT'];
+  var isInbound=INBOUND_SET.indexOf(area)!==-1;
+  var h='';
+  h+='<div class="area-card" onclick="openModal(\''+aesc+'\')">';
+  h+='<div class="ac-header">';
+  var displayName = AREA_LABEL[area] || area;
+  h+='<span class="ac-name" style="color:'+color+'">'+displayName+'</span>';
+  h+='<span class="ac-badge '+badge+'">'+fmt(d.totalU)+' un</span>';
+  h+='</div>';
+  h+='<div class="ac-kpis">';
+  h+='<div class="ac-kpi"><div class="ac-kv">'+fmt(d.totalU)+'</div>'
+    +'<div class="ac-kl">Unidades</div></div>';
+  h+='<div class="ac-kpi"><div class="ac-kv">'+fmt(d.totalV)+'</div>'
+    +'<div class="ac-kl">Vol Total (L)</div></div>';
+  h+='<div class="ac-kpi"><div class="ac-kv">'+fmtD(d.volPU,1)+'</div>'
+    +'<div class="ac-kl">L / Unidad</div></div>';
+  if(!isInbound){
+    h+='<div class="ac-kpi"><div class="ac-kv">'+(d.binfullness!=null?d.binfullness+'%':'-')+'</div>'
+      +'<div class="ac-kl">Binfullness</div></div>';
+  }
+  h+='<div class="ac-kpi"><div class="ac-kv">'+fmt(d.totalSKU)+'</div>'
+    +'<div class="ac-kl">SKU Únicos</div></div>';
+  h+='<div class="ac-kpi"><div class="ac-kv">'+fmtD(d.profundidad,1)+'</div>'
+    +'<div class="ac-kl">Profundidad</div></div>';
+  h+='</div>';
+  h+='<div class="ac-chart-hd">';
+  h+='<span class="ac-click-hint">Ver detalle</span>';
+  h+='</div>';
+  h+='<div class="ac-chart-wrap"><canvas id="'+cid+'"></canvas></div>';
+  var opt=OPT_VOL[area];
+  if(opt){
+    h+='<div class="ac-opt-note" id="note-'+area+'" style="display:none">';
+    h+='<span class="ref-line"></span>';
+    h+='<span>Línea roja = volumetría óptima <strong>'+opt.vol.toFixed(1)+' L/un</strong> &middot; '+opt.note+'</span>';
+    h+='</div>';
+  }
+  var bin=OPT_BIN[area];
+  if(bin){
+    h+='<div class="ac-bin-bar">';
+    h+='<span style="font-weight:600;color:rgba(0,0,0,.55)">📦 Llenado del bin</span>';
+    h+='<span>🟢 Bueno: <span class="bin-opt">≤'+bin.opt+'%</span> de capacidad usada</span>';
+    h+='<span>🔴 Crítico: <span class="bin-crit">≥'+bin.crit+'%</span> → el bin está lleno</span>';
+    if(bin.driver) h+='<span style="color:#3483fa;font-weight:600">⚡ impacta UPH</span>';
+    else h+='<span class="bin-nd">sin impacto medido en UPH</span>';
+    h+='</div>';
+  }
+  h+='</div>';
+  return {html:h, cid:cid, d:d, color:color};
+}
+
+// RENDER GRID
+function renderGrid(gridId, areas, fdata){
+  areas.forEach(function(area){
+    var cid='ch-'+area;
+    if(ACT_CHARTS[cid]){ ACT_CHARTS[cid].instance.destroy(); delete ACT_CHARTS[cid]; }
+  });
+  var grid=document.getElementById(gridId);
+  var cards=areas.map(function(a){ return buildCard(a,fdata); });
+  grid.innerHTML=cards.map(function(c){ return c.html; }).join('');
+  cards.forEach(function(c){
+    var canvas=document.getElementById(c.cid);
+    if(!canvas) return;
+    var dataLabelPlugin = {
+      id:'topLabels',
+      afterDatasetsDraw:function(chart){
+        var ctx=chart.ctx;
+        chart.data.datasets.forEach(function(ds,i){
+          if(ds.type==='line') return; // skip reference line
+          var meta=chart.getDatasetMeta(i);
+          meta.data.forEach(function(bar,idx){
+            var val=ds.data[idx];
+            if(val==null||val===0) return;
+            var label=CHART_MODE==='u'?(val>=1000?(val/1000).toFixed(1)+'K':val):
+                      CHART_MODE==='v'?val.toFixed(1):val.toFixed(1)+'%';
+            ctx.save();
+            ctx.fillStyle='rgba(0,0,0,0.65)';
+            ctx.font='bold 9px Arial';
+            ctx.textAlign='center';
+            ctx.fillText(label,bar.x,bar.y-3);
+            ctx.restore();
+          });
+        });
+      }
+    };
+    var areaKey=c.cid.replace('ch-','');
+    var optRef=OPT_VOL[areaKey];
+    var refLineData=optRef?Array(c.d.labels.length).fill(optRef.vol):[];
+    var inst=new Chart(canvas,{
+      type:'bar',
+      plugins:[dataLabelPlugin],
+      data:{
+        labels:c.d.labels,
+        datasets:[
+          {data:c.d.units,backgroundColor:c.color,borderRadius:4,borderWidth:0},
+          {type:'line',data:refLineData,borderColor:'#e84040',borderWidth:2,
+           borderDash:[6,4],pointRadius:0,fill:false,tension:0,hidden:true,label:'Óptimo'}
+        ]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{
+          legend:{display:false},
+          tooltip:{callbacks:{label:function(ctx){
+            return ' '+ctx.parsed.y.toLocaleString('es-CL')+' un';
+          }}}
+        },
+        scales:{
+          x:{grid:{display:false},ticks:{color:'rgba(0,0,0,.4)',font:{size:10},maxRotation:45,maxTicksLimit:16}},
+          y:{grid:{color:'rgba(0,0,0,.04)'},beginAtZero:true,ticks:{color:'rgba(0,0,0,.45)',font:{size:11},callback:function(v){ return v.toLocaleString('es-CL'); }}}
+        }
+      }
+    });
+    ACT_CHARTS[c.cid]={instance:inst,units:c.d.units,vols:c.d.vols,volsPerU:c.d.volsPerU,shares:c.d.shares,optRef:optRef,refLineData:refLineData,area:areaKey};
+  });
+}
+
+// VENTANA
+function setWindow(h){
+  WINDOW_H=h;
+  document.querySelectorAll('.fbtn[data-h]').forEach(function(b){
+    b.classList.toggle('active',parseInt(b.dataset.h,10)===h);
+  });
+  document.getElementById('win-info').textContent='Ultimas '+h+'h';
+  var fd=getFilteredData(h);
+  renderGrid('grid-mz',AREAS_TAB1,fd);
+  renderGrid('grid-bl',AREAS_TAB2,fd);
+  renderGrid('grid-inbound',AREAS_INBOUND,fd);
+}
+function setGranMode(g){
+  GRAN_MODE=g;
+  document.querySelectorAll('.fbtn[data-g]').forEach(function(b){
+    b.classList.toggle('active',b.dataset.g===g);
+  });
+  var pb=document.getElementById('periodo-bar');
+  var tb=document.querySelector('.turno-bar');
+  var sb=document.getElementById('sem-bar');
+  var wi=document.getElementById('win-info');
+  if(pb) pb.style.display=(g==='hora')?'':'none';
+  if(tb) tb.style.display=(g==='hora')?'':'none';
+  if(sb) sb.style.display=(g==='semana')?'flex':'none';
+  if(wi){
+    if(g==='semana') wi.textContent=SEM_SEL==='actual'?'Esta semana':'Semana anterior';
+    else wi.textContent='Ultimas '+WINDOW_H+'h';
+  }
+  refreshAll();
+}
+function setDiaSel(offset){
+  DIA_SEL=offset;
+  document.querySelectorAll('.fbtn[data-dia]').forEach(function(b){
+    b.classList.toggle('active',+b.dataset.dia===offset);
+  });
+  var nm=['Hoy','Ayer','Anteayer'];
+  var wi=document.getElementById('win-info');
+  if(wi) wi.textContent=nm[offset]||'Hoy';
+  refreshAll();
+}
+function setSemSel(s){
+  SEM_SEL=s;
+  document.querySelectorAll('.fbtn[data-sem]').forEach(function(b){
+    b.classList.toggle('active',b.dataset.sem===s);
+  });
+  var wi=document.getElementById('win-info');
+  if(wi) wi.textContent=(s==='actual')?'Esta semana':'Semana anterior';
+  refreshAll();
+}
+
+// TABS
+var tabs=document.querySelectorAll('.tab');
+var CURRENT_TAB='mz';
+function showTab(tab){
+  CURRENT_TAB=tab;
+  tabs.forEach(function(b){ b.classList.remove('active'); });
+  document.querySelectorAll('.tab-content').forEach(function(c){ c.classList.remove('visible'); });
+  if(tab==='mz'){
+    document.getElementById('tab-mz').classList.add('visible');
+    tabs[0].classList.add('active');
+  } else if(tab==='bl'){
+    document.getElementById('tab-bl').classList.add('visible');
+    tabs[1].classList.add('active');
+  } else if(tab==='inbound'){
+    document.getElementById('tab-inbound').classList.add('visible');
+    tabs[2].classList.add('active');
+  } else {
+    document.getElementById('tab-detalle').classList.add('visible');
+    tabs[3].classList.add('active');
+    renderDetalleTable();
+  }
+  // Deshabilitar Share en INBOUND y Detalle
+  var sharBtn=document.querySelector('.fbtn[data-m="s"]');
+  if(tab==='inbound'||tab==='detalle'){
+    sharBtn.classList.add('disabled');
+    sharBtn.title='No disponible en esta vista';
+  } else {
+    sharBtn.classList.remove('disabled');
+    sharBtn.title='';
+  }
+  if(tab!=='detalle') setGlobalMode('u');
+}
+
+// MODAL
+var mData=[], mSortIdx=0, mSortAsc=false, mArea='';
+
+function openModal(area){
+  var color=AREA_COLOR[area]||'#888';
+  var badge=AREA_BADGE[area]||'badge-gray';
+  var rows=getFilteredData().filter(function(r){ return r.AREA===area; });
+  rows.sort(function(a,b){
+    var fa=String(a.FECHA||''),fb=String(b.FECHA||'');
+    if(fa!==fb) return fa>fb?-1:1;
+    return (+b.HORA||0)-(+a.HORA||0);
+  });
+  var totalU=0,totalV=0,totalSKU=0;
+  rows.forEach(function(r){ totalU+=(+r.Cantidad_Total_Unidades||0); totalV+=(+r.Volumen_Total_Litros||0); totalSKU+=(+r.SKUs_Distintos||0); });
+  var volPU=totalU?totalV/totalU:0;
+  document.getElementById('m-name').textContent=area;
+  document.getElementById('m-name').style.color=color;
+  var mb=document.getElementById('m-badge');
+  mb.className='ac-badge '+badge;
+  mb.textContent=fmt(totalU)+' unidades';
+  var turnoStr=TURNO_START!==null?' · Turno '+TURNO_START+'h–'+TURNO_END+'h':'';
+  document.getElementById('m-subtitle').textContent='Detalle por hora · ultimas '+WINDOW_H+'h'+turnoStr;
+  document.getElementById('m-kpis').innerHTML=
+    mkpi(fmt(totalU),'Total Unidades')+
+    mkpi(fmt(totalV),'Vol Total (L)')+
+    mkpi(fmtD(volPU,3),'Vol / Unidad (L)')+
+    mkpi(fmt(totalSKU),'SKU Únicos')+
+    mkpi(totalSKU ? fmtD(totalU/totalSKU,1) : '-','Profundidad')+
+    mkpi(rows.length,'Registros');
+  mData=rows;
+  mData.forEach(function(r){ var s=+r.SKUs_Distintos||0; r.profundidad_calc=s?(+r.Cantidad_Total_Unidades||0)/s:0; });
+  mSortIdx=0; mSortAsc=false; mArea=area;
+  renderMTable();
+  document.getElementById('modal').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+
+function mkpi(v,l){
+  return '<div class="modal-kpi"><div class="modal-kv">'+v+'</div>'
+    +'<div class="modal-kl">'+l+'</div></div>';
+}
+function closeModal(){
+  document.getElementById('modal').classList.remove('open');
+  document.body.style.overflow='';
+}
+function closeModalOnBg(e){
+  if(e.target===document.getElementById('modal')) closeModal();
+}
+function renderMTable(){
+  var tbody=document.getElementById('m-tbody');
+  var INBOUND_AREAS=['CI_TOT','CI_NOT','DCI_TOT','DCI_NOT','INBOUND'];
+  var isInbound=INBOUND_AREAS.indexOf(mArea)!==-1;
+  var totalUnits=mData.reduce(function(s,r){ return s+(+r.Cantidad_Total_Unidades||0); },0);
+  var optV=OPT_VOL[mArea];
+  var h='';
+  mData.forEach(function(r){
+    var u=(+r.Cantidad_Total_Unidades||0);
+    var share=totalUnits>0?(u/totalUnits*100):0;
+    var vol=+r.Volumetria_Litros_Por_Unidad||0;
+    var volClass='';
+    if(optV && vol>0){
+      volClass = vol > optV.vol ? 'vol-bad' : 'vol-good';
+    }
+    h+='<tr>';
+    h+='<td>'+(r.FECHA||'-')+'</td>';
+    h+='<td>'+(r.HORA!=null?r.HORA+'h':'-')+'</td>';
+    h+='<td>'+(r.AREA||'-')+'</td>';
+    var skuR=(+r.SKUs_Distintos||0);
+    var profR=skuR ? (u/skuR) : 0;
+    h+='<td class="num">'+(skuR?skuR.toLocaleString('es-CL'):'-')+'</td>';
+    h+='<td class="num">'+(u?u.toLocaleString('es-CL'):'-')+'</td>';
+    h+='<td class="num">'+(profR?fmtD(profR,1):'-')+'</td>';
+    h+='<td class="num">'+fmtD(r.Volumen_Total_Litros,2)+'</td>';
+    h+='<td class="num '+volClass+'">'+fmtD(vol,3)+'</td>';
+    h+='<td class="num">'+(isInbound?'-':share.toFixed(1)+'%')+'</td>';
+    h+='</tr>';
+  });
+  tbody.innerHTML=h||'<tr><td colspan="9" style="text-align:center;padding:32px;color:rgba(0,0,0,.3)">Sin registros</td></tr>';
+}
+function mSort(idx){
+  var cols=['FECHA','HORA','AREA','SKUs_Distintos','Cantidad_Total_Unidades','profundidad_calc','Volumen_Total_Litros','Volumetria_Litros_Por_Unidad','share'];
+  if(mSortIdx===idx){ mSortAsc=!mSortAsc; } else { mSortIdx=idx; mSortAsc=true; }
+  var col=cols[idx];
+  mData.sort(function(a,b){
+    var va=a[col],vb=b[col];
+    if(va==null) return 1; if(vb==null) return -1;
+    var na=Number(va),nb=Number(vb);
+    if(!isNaN(na)&&!isNaN(nb)) return mSortAsc?na-nb:nb-na;
+    return mSortAsc?String(va).localeCompare(String(vb),'es'):String(vb).localeCompare(String(va),'es');
+  });
+  document.querySelectorAll('.sort-icon').forEach(function(e){ e.textContent=' ↕'; });
+  var si=document.getElementById('si-'+idx);
+  if(si) si.textContent=mSortAsc?' ↑':' ↓';
+  renderMTable();
+}
+
+// ── TOTEABILIDAD ──────────────────────────────────────────────────────────────
+function toteTs(r){
+  var parts=String(r.FECHA||'').split('-');
+  var base=parts.length===3?new Date(+parts[0],+parts[1]-1,+parts[2]).getTime():new Date(String(r.FECHA||'')).getTime();
+  return base+(parseInt(r.HORA,10)||0)*3600000;
+}
+function getFilteredTote(){
+  if(!DATA_TOTE||!DATA_TOTE.length) return [];
+  var maxTs=0;
+  DATA_TOTE.forEach(function(r){ var t=toteTs(r); if(t>maxTs) maxTs=t; });
+  var cut=maxTs-WINDOW_H*3600000;
+  var rows=DATA_TOTE.filter(function(r){ return toteTs(r)>=cut; });
+  if(TURNO_DATE) rows=rows.filter(function(r){ return String(r.FECHA)===TURNO_DATE; });
+  if(TURNO_START!==null&&TURNO_END!==null){
+    rows=rows.filter(function(r){
+      var h=+r.HORA;
+      return TURNO_START<=TURNO_END?(h>=TURNO_START&&h<=TURNO_END):(h>=TURNO_START||h<=TURNO_END);
+    });
+  }
+  return rows;
+}
+
+function buildToteCard(proceso, fdata){
+  var rows=fdata.filter(function(r){ return r.PROCESO===proceso; });
+  var map={}, keys=[];
+  rows.forEach(function(r){
+    var key=String(r.FECHA||'')+'|'+String(r.HORA||'0');
+    if(!map[key]){
+      map[key]={tot:0,not:0,vT:0,vN:0,fecha:String(r.FECHA||''),hora:+r.HORA||0};
+      keys.push(key);
+    }
+    map[key].tot+=(+r.UDS_TOTEABLE||0);
+    map[key].not+=(+r.UDS_NO_TOTEABLE||0);
+    map[key].vT+=(+r.VOL_L_TOTEABLE||0);
+    map[key].vN+=(+r.VOL_L_NO_TOTEABLE||0);
+  });
+  keys.sort(function(a,b){
+    var da=map[a].fecha+String(map[a].hora).padStart(2,'0');
+    var db=map[b].fecha+String(map[b].hora).padStart(2,'0');
+    return da<db?-1:da>db?1:0;
+  });
+  var totT=0,totN=0,volT=0,volN=0;
+  keys.forEach(function(k){ totT+=map[k].tot; totN+=map[k].not; volT+=map[k].vT; volN+=map[k].vN; });
+  var labels=keys.map(function(k){
+    var d=map[k]; var p=d.fecha.split('-');
+    return (p.length===3?p[2]+'/'+p[1]:d.fecha)+' '+d.hora+'h';
+  });
+  var title=proceso==='checkin'?'CHECKIN':'DCI';
+  var color=proceso==='checkin'?'#0097a7':'#7b1fa2';
+  var cid='tote-ch-'+proceso;
+  var pesc=proceso.replace(/'/g,"\\'");
+  var h='';
+  h+='<div class="tote-card">';
+  h+='<div class="tote-hd">';
+  h+='<span class="tote-title" style="color:'+color+'">'+title+' — Toteabilidad</span>';
+  h+='<div class="tote-toggle">';
+  h+='<button class="ctbtn '+(TOTE_MODE==='u'?'active':'')+'" id="tbtu-'+pesc+'" onclick="setToteMode(\'u\',event)">Unidades</button>';
+  h+='<button class="ctbtn '+(TOTE_MODE==='v'?'active':'')+'" id="tbtv-'+pesc+'" onclick="setToteMode(\'v\',event)">L/un</button>';
+  h+='</div>';
+  h+='</div>';
+  h+='<div class="tote-kpis">';
+  h+='<div class="tote-kpi"><div class="tote-kv" style="color:#00a650">'+fmt(totT)+'</div><div class="tote-kl">Toteable (un)</div></div>';
+  h+='<div class="tote-kpi"><div class="tote-kv" style="color:#3483fa">'+fmt(totN)+'</div><div class="tote-kl">No Toteable (un)</div></div>';
+  h+='<div class="tote-kpi"><div class="tote-kv">'+fmtD(totT?volT/totT:0,2)+'</div><div class="tote-kl">L/un Toteable</div></div>';
+  h+='<div class="tote-kpi"><div class="tote-kv">'+fmtD(totN?volN/totN:0,2)+'</div><div class="tote-kl">L/un No Toteable</div></div>';
+  h+='</div>';
+  h+='<div class="tote-chart-wrap"><canvas id="'+cid+'"></canvas></div>';
+  h+='<div class="tote-legend">';
+  h+='<span><span class="tote-dot" style="background:#00a650"></span>Toteable</span>';
+  h+='<span><span class="tote-dot" style="background:#3483fa"></span>No Toteable</span>';
+  h+='</div>';
+  h+='</div>';
+  return {html:h, cid:cid, labels:labels,
+    units_t:keys.map(function(k){ return map[k].tot; }),
+    units_n:keys.map(function(k){ return map[k].not; }),
+    vpu_t:keys.map(function(k){ return map[k].tot>0?Math.round(map[k].vT/map[k].tot*1000)/1000:0; }),
+    vpu_n:keys.map(function(k){ return map[k].not>0?Math.round(map[k].vN/map[k].not*1000)/1000:0; })
+  };
+}
+
+function renderToteGrid(fdata){
+  var procs=['checkin','direct_checkin'];
+  procs.forEach(function(p){
+    var cid='tote-ch-'+p;
+    if(ACT_TOTE_CHARTS[cid]){ ACT_TOTE_CHARTS[cid].instance.destroy(); delete ACT_TOTE_CHARTS[cid]; }
+  });
+  var container=document.getElementById('tote-grid');
+  if(!container) return;
+  var cards=procs.map(function(p){ return buildToteCard(p,fdata); });
+  container.innerHTML=cards.map(function(c){ return c.html; }).join('');
+  cards.forEach(function(c){
+    var canvas=document.getElementById(c.cid);
+    if(!canvas) return;
+    var inst=new Chart(canvas,{
+      type:'bar',
+      data:{
+        labels:c.labels,
+        datasets:[
+          {label:'Toteable',data:c.units_t,backgroundColor:'rgba(0,166,80,.75)',borderRadius:3,borderWidth:0},
+          {label:'No Toteable',data:c.units_n,backgroundColor:'rgba(52,131,250,.75)',borderRadius:3,borderWidth:0}
+        ]
+      },
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{
+          legend:{display:false},
+          tooltip:{callbacks:{label:function(ctx){ return ' '+ctx.dataset.label+': '+(+ctx.parsed.y).toLocaleString('es-CL')+' un'; }}}
+        },
+        scales:{
+          x:{grid:{display:false},ticks:{color:'rgba(0,0,0,.4)',font:{size:10},maxRotation:45,maxTicksLimit:16}},
+          y:{grid:{color:'rgba(0,0,0,.04)'},beginAtZero:true,
+             ticks:{color:'rgba(0,0,0,.45)',font:{size:11},callback:function(v){ return v>=1000?(v/1000).toFixed(0)+'K':v; }}}
+        }
+      }
+    });
+    ACT_TOTE_CHARTS[c.cid]={instance:inst,
+      units_t:c.units_t,units_n:c.units_n,vpu_t:c.vpu_t,vpu_n:c.vpu_n};
+  });
+}
+
+function setToteMode(mode, ev){
+  if(ev) ev.stopPropagation();
+  TOTE_MODE=mode;
+  ['checkin','direct_checkin'].forEach(function(proc){
+    ['u','v'].forEach(function(m){
+      var btn=document.getElementById((m==='u'?'tbtu':'tbtv')+'-'+proc);
+      if(btn) btn.classList.toggle('active',m===mode);
+    });
+    var obj=ACT_TOTE_CHARTS['tote-ch-'+proc];
+    if(!obj) return;
+    if(mode==='u'){
+      obj.instance.data.datasets[0].data=obj.units_t;
+      obj.instance.data.datasets[1].data=obj.units_n;
+      obj.instance.options.plugins.tooltip.callbacks.label=function(ctx){ return ' '+ctx.dataset.label+': '+(+ctx.parsed.y).toLocaleString('es-CL')+' un'; };
+      obj.instance.options.scales.y.ticks.callback=function(v){ return v>=1000?(v/1000).toFixed(0)+'K':v; };
+    } else {
+      obj.instance.data.datasets[0].data=obj.vpu_t;
+      obj.instance.data.datasets[1].data=obj.vpu_n;
+      obj.instance.options.plugins.tooltip.callbacks.label=function(ctx){ return ' '+ctx.dataset.label+': '+ctx.parsed.y.toFixed(3)+' L/un'; };
+      obj.instance.options.scales.y.ticks.callback=function(v){ return v.toFixed(2); };
+    }
+    obj.instance.update();
+  });
+}
+
+// ── DETALLE PIVOT TABLE ───────────────────────────────────────────────────────
+var DT_PUTAWAY = ['MZ0','MZ1','MZ2','MZ3','HV3','BL0','HS','RK0'];
+var DT_INBOUND = ['CI_TOT','CI_NOT','DCI_TOT','DCI_NOT'];
+var DT_LABELS  = {
+  MZ0:'MZ0',MZ1:'MZ1',MZ2:'MZ2',MZ3:'MZ3',HV3:'HV3',
+  BL0:'BL0',HS:'HS',RK0:'RK0',
+  CI_TOT:'CI Tot.',CI_NOT:'CI No Tot.',DCI_TOT:'DCI Tot.',DCI_NOT:'DCI No Tot.'
+};
+
+function renderDetalleTable(){
+  var fd=getFilteredData();
+  var ALL_COLS=DT_PUTAWAY.concat(DT_INBOUND);
+  var byHour={}, byArea={};
+
+  fd.forEach(function(r){
+    var h=+r.HORA||0;
+    var a=r.AREA;
+    if(ALL_COLS.indexOf(a)===-1) return;
+    if(!byHour[h]) byHour[h]={};
+    if(!byHour[h][a]) byHour[h][a]={v:0,u:0};
+    byHour[h][a].v+=(+r.Volumen_Total_Litros||0);
+    byHour[h][a].u+=(+r.Cantidad_Total_Unidades||0);
+    if(!byArea[a]) byArea[a]={v:0,u:0};
+    byArea[a].v+=(+r.Volumen_Total_Litros||0);
+    byArea[a].u+=(+r.Cantidad_Total_Unidades||0);
+  });
+
+  var hours=Object.keys(byHour).map(Number).sort(function(a,b){return a-b;});
+
+  function lxu(v,u){ return u>0?(v/u).toFixed(2):'—'; }
+
+  var t='<table class="detalle-tbl"><thead>';
+  // Fila 1: grupos
+  t+='<tr>';
+  t+='<th rowspan="2" class="dt-hora-hd">HORA</th>';
+  t+='<th colspan="'+DT_PUTAWAY.length+'" class="dt-group-pu">PUTAWAY &mdash; L/un por zona</th>';
+  t+='<th colspan="'+DT_INBOUND.length+'" class="dt-group-in">CHECKIN + DCI &mdash; L/un</th>';
+  t+='</tr>';
+  // Fila 2: columnas
+  t+='<tr>';
+  DT_PUTAWAY.forEach(function(a){ t+='<th class="dt-col-pu">'+a+'</th>'; });
+  DT_INBOUND.forEach(function(a){ t+='<th class="dt-col-in">'+DT_LABELS[a]+'</th>'; });
+  t+='</tr></thead><tbody>';
+
+  hours.forEach(function(hora){
+    t+='<tr><td class="dt-hora-cell">'+hora+'h</td>';
+    ALL_COLS.forEach(function(a){
+      var d=byHour[hora]?byHour[hora][a]:null;
+      var val=d?lxu(d.v,d.u):'—';
+      var cls=DT_PUTAWAY.indexOf(a)!==-1?'dt-cell-pu':'dt-cell-in';
+      t+='<td class="'+cls+'">'+val+'</td>';
+    });
+    t+='</tr>';
+  });
+
+  t+='</tbody><tfoot><tr class="dt-footer">';
+  t+='<td class="dt-hora-cell">PROM.<br>POND.</td>';
+  ALL_COLS.forEach(function(a){
+    var d=byArea[a];
+    var val=d?lxu(d.v,d.u):'—';
+    t+='<td>'+val+'</td>';
+  });
+  t+='</tr></tfoot></table>';
+
+  var wrap=document.getElementById('detalle-wrap');
+  if(wrap) wrap.innerHTML=t;
+}
+
+document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeModal(); });
+
+</script>
+<script>
+(function(){
+  Object.assign(OPT_VOL, {
+    MZ0:{vol:1.79,uph:0,dir:'baja',note:'Impacto desde 1.94 L/un · −12.4% | crítico 2.80 L/un · −28.4%'},
+    MZ1:{vol:3.77,uph:0,dir:'baja',note:'Sin impacto consistente'},
+    MZ2:{vol:3.68,uph:0,dir:'baja',note:'Sin impacto consistente'},
+    MZ3:{vol:5.45,uph:0,dir:'baja',note:'Sin impacto consistente'},
+    HV3:{vol:1.22,uph:0,dir:'baja',note:'Impacto desde 1.45 L/un · −15.3% | crítico 1.71 L/un · −20.5%'},
+    BL0:{vol:24.6,uph:0.4,dir:'baja',note:'Línea operativa existente'},
+    HS:{vol:33.4,uph:0.2,dir:'baja',note:'Línea operativa existente'},
+    RK0:{vol:50.5,uph:0.2,dir:'baja',note:'Línea operativa existente · impacto diario desde 56.95 L/un · −14.0%'},
+    CI_TOT:{vol:3.08,uph:0,dir:'baja',note:'Impacto desde 3.73 L/un · −14.2%'},
+    CI_NOT:{vol:29.20,uph:0,dir:'baja',note:'Sin impacto consistente'},
+    DCI_TOT:{vol:3.09,uph:0,dir:'baja',note:'Impacto desde 3.41 L/un · −20.5%'},
+    DCI_NOT:{vol:35.47,uph:0,dir:'baja',note:'Sin impacto consistente'}
+  });
+  var header=document.querySelector('.ml-header');if(header)header.insertAdjacentHTML('afterbegin','<div class="vm-head"><b>Volumetría por Área</b><i></i><small>CD-01 · MLC</small></div>');
+  var page=document.querySelector('.page'),footer=document.querySelector('.pfooter');if(page&&footer)footer.insertAdjacentHTML('beforebegin','<div id="tab-impacto" class="tab-content"><section class="vm-impact"><header><h2>Impacto de volumetría en productividad</h2><p>Umbrales diarios con últimos 90 días completos. — = sin caída consistente ≥10% o sin cobertura suficiente.</p></header><div class="vm-scroll"><table><thead><tr><th>Proceso / área</th><th>Días</th><th>L/u óptimo</th><th>L/día óptimo</th><th>P_NETA óptima</th><th>Inicio impacto</th><th>P_NETA impacto</th><th>Pérdida</th><th>Punto crítico</th></tr></thead><tbody><tr><td>CI Toteable</td><td>89</td><td>3.08</td><td>575K</td><td>240.8</td><td>3.73 L/u</td><td>206.6</td><td class="vm-loss">−14.2%</td><td class="vm-na">—</td></tr><tr><td>CI No Toteable</td><td>89</td><td>29.20</td><td>325K</td><td>229.3</td><td class="vm-na">—</td><td class="vm-na">—</td><td class="vm-na">—</td><td class="vm-na">—</td></tr><tr><td>DCI Toteable</td><td>62</td><td>3.09</td><td>212K</td><td>595.9</td><td>3.41 L/u</td><td>473.7</td><td class="vm-loss">−20.5%</td><td class="vm-loss">3.41 L/u · −20.5%</td></tr><tr><td>DCI No Toteable</td><td>62</td><td>35.47</td><td>181K</td><td>580.9</td><td class="vm-na">—</td><td class="vm-na">—</td><td class="vm-na">—</td><td class="vm-na">—</td></tr><tr><td>Putaway MZ0</td><td>89</td><td>1.79</td><td>166K</td><td>310.3</td><td>1.94 L/u</td><td>271.8</td><td class="vm-loss">−12.4%</td><td class="vm-loss">2.80 L/u · −28.4%</td></tr><tr><td>Putaway MZ1</td><td>86</td><td>3.77</td><td>185K</td><td>242.4</td><td class="vm-na">—</td><td class="vm-na">—</td><td class="vm-na">—</td><td class="vm-na">—</td></tr><tr><td>Putaway MZ2</td><td>87</td><td>3.68</td><td>136K</td><td>235.8</td><td class="vm-na">—</td><td class="vm-na">—</td><td class="vm-na">—</td><td class="vm-na">—</td></tr><tr><td>Putaway MZ3</td><td>65</td><td>5.45</td><td>126K</td><td>251.0</td><td class="vm-na">—</td><td class="vm-na">—</td><td class="vm-na">—</td><td class="vm-na">—</td></tr><tr><td>Putaway HV3</td><td>67</td><td>1.22</td><td>13K</td><td>424.3</td><td>1.45 L/u</td><td>359.4</td><td class="vm-loss">−15.3%</td><td class="vm-loss">1.71 L/u · −20.5%</td></tr><tr><td>Putaway BL0</td><td>43</td><td colspan="7" class="vm-na" style="text-align:center">Sin buckets con al menos 10 días</td></tr><tr><td>Putaway HS</td><td>0</td><td colspan="7" class="vm-na" style="text-align:center">Sin intersección diaria válida</td></tr><tr><td>Putaway RK0</td><td>89</td><td>44.86</td><td>198K</td><td>159.8</td><td>56.95 L/u</td><td>137.4</td><td class="vm-loss">−14.0%</td><td class="vm-na">—</td></tr></tbody></table></div></section></div>');
+  var modeGroup=document.querySelector('.filter-group .fbtn[data-m]')&&document.querySelector('.filter-group .fbtn[data-m]').parentElement,uBtn=document.querySelector('.fbtn[data-m="u"]'),vBtn=document.querySelector('.fbtn[data-m="v"]');if(modeGroup&&uBtn&&vBtn)modeGroup.insertBefore(vBtn,uBtn);var originalShowTab=window.showTab;window.showTab=function(tab){if(tab==='impacto'){document.querySelectorAll('.tab-content').forEach(function(el){el.classList.remove('visible')});document.getElementById('tab-impacto').classList.add('visible');CURRENT_TAB='impacto'}else{originalShowTab(tab);if(tab!=='detalle')setGlobalMode('v')}document.querySelectorAll('[data-vm-nav]').forEach(function(b){b.classList.toggle('active',b.dataset.vmNav===tab)})};
+  var originalRenderGrid=window.renderGrid;window.renderGrid=function(){originalRenderGrid.apply(this,arguments);setGlobalMode('v')};CHART_MODE='v';document.querySelectorAll('.fbtn[data-m]').forEach(function(b){b.classList.toggle('active',b.dataset.m==='v')});
+  var volSections={put_tote:{tab:'mz',panel:'tab-mz',title:'Putaway Toteable'},put_no_tote:{tab:'bl',panel:'tab-bl',title:'Putaway No Toteable'},inbound:{tab:'inbound',panel:'tab-inbound',title:'Checkin + DCI'}};
+  window.activateVolSection=function(key){
+    var cfg=volSections[key];if(!cfg)return;
+    document.querySelectorAll('.vm-nav [data-vol-section]').forEach(function(btn){var isActive=btn.dataset.volSection===key;btn.classList.toggle('active',isActive);if(isActive)btn.setAttribute('aria-current','page');else btn.removeAttribute('aria-current');});
+    document.querySelectorAll('.tab-content').forEach(function(panel){panel.classList.remove('visible');});
+    var panel=document.getElementById(cfg.panel);if(panel)panel.classList.add('visible');
+    CURRENT_TAB=cfg.tab;
+    var title=document.querySelector('.header h1')||document.querySelector('.page h1');if(title)title.textContent='Volumetría por Área — '+cfg.title;
+    if(typeof setGlobalMode==='function')setGlobalMode('v');
+  };
+  document.querySelectorAll('.vm-nav [data-vol-section]').forEach(function(btn){btn.addEventListener('click',function(){activateVolSection(btn.dataset.volSection);});});
+  var toggle=document.querySelector('.vm-toggle');if(toggle)toggle.addEventListener('click',function(){document.getElementById('vm-side').classList.toggle('open');});
+})();
+</script>
+<script>
+(function(){var open=document.getElementById('vm-help-open'),overlay=document.getElementById('vm-help-overlay'),close=document.getElementById('vm-help-close');if(!open||!overlay||!close)return;function show(){overlay.classList.add('open');overlay.setAttribute('aria-hidden','false')}function hide(){overlay.classList.remove('open');overlay.setAttribute('aria-hidden','true')}open.addEventListener('click',show);close.addEventListener('click',hide);overlay.addEventListener('click',function(e){if(e.target===overlay)hide()});document.addEventListener('keydown',function(e){if(e.key==='Escape')hide()});})();
+</script>
+</body>
+</html>
+
+
+
+
+
+
